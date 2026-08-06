@@ -75,8 +75,78 @@ class WeeklyActivityStrip extends ConsumerWidget {
               );
             }).toList(),
           ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _Legend(
+                swatch: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: colors.primary,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                label: '学習した日',
+                colors: colors,
+              ),
+              const SizedBox(width: 16),
+              _Legend(
+                swatch: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: colors.cardBorder.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                label: '未学習',
+                colors: colors,
+              ),
+              const SizedBox(width: 16),
+              _Legend(
+                swatch: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: colors.secondary, width: 2),
+                  ),
+                ),
+                label: '今日',
+                colors: colors,
+              ),
+            ],
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _Legend extends StatelessWidget {
+  final Widget swatch;
+  final String label;
+  final AppColors colors;
+  const _Legend({
+    required this.swatch,
+    required this.label,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        swatch,
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: colors.textSecondary),
+        ),
+      ],
     );
   }
 }
