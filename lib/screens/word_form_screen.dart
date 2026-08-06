@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../models/part_of_speech.dart';
 import '../providers/providers.dart';
 import '../services/dictionary_service.dart';
-import '../widgets/tag_input.dart';
 
 class WordFormScreen extends ConsumerStatefulWidget {
   final Word? existing;
@@ -20,11 +20,10 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
   late final TextEditingController _englishController;
   late final TextEditingController _japaneseController;
   late final TextEditingController _exampleController;
-  late final TextEditingController _partOfSpeechController;
 
+  PartOfSpeech? _selectedPos;
   String? _audioUrl;
   bool _isLookingUp = false;
-  List<String> _tags = [];
 
   @override
   void initState() {
@@ -34,16 +33,10 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     _japaneseController = TextEditingController(text: existing?.japanese ?? '');
     _exampleController =
         TextEditingController(text: existing?.exampleSentence ?? '');
-    _partOfSpeechController =
-        TextEditingController(text: existing?.partOfSpeech ?? '');
+    _selectedPos = existing?.partOfSpeech != null
+        ? mapToPartOfSpeech(existing!.partOfSpeech!)
+        : null;
     _audioUrl = existing?.audioUrl;
-    if (existing != null) {
-      ref.read(tagRepositoryProvider).getTagsForWord(existing.id).then((
-        tags,
-      ) {
-        if (mounted) setState(() => _tags = tags);
-      });
-    }
   }
 
   @override
@@ -51,7 +44,6 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     _englishController.dispose();
     _japaneseController.dispose();
     _exampleController.dispose();
-    _partOfSpeechController.dispose();
     super.dispose();
   }
 
@@ -69,23 +61,64 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     if (!mounted) return;
     setState(() => _isLookingUp = false);
 
-    if (result == null) {
+    if (result == null || result.senses.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('辞書から情報を取得できませんでした')),
       );
       return;
     }
 
+    if (result.audioUrl != null) {
+      setState(() => _audioUrl = result.audioUrl);
+    }
+
+    if (result.senses.length == 1) {
+      final sense = result.senses.first;
+      setState(() {
+        _selectedPos ??= sense.partOfSpeech;
+        if (_exampleController.text.trim().isEmpty && sense.example != null) {
+          _exampleController.text = sense.example!;
+        }
+      });
+      return;
+    }
+
+    if (!mounted) return;
+    await _pickSense(result.senses);
+  }
+
+  Future<void> _pickSense(List<DictionarySense> senses) async {
+    final chosen = await showModalBottomSheet<DictionarySense>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                'この単語には複数の品詞があります。どちらの意味で登録しますか？',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+            ...senses.map(
+              (sense) => ListTile(
+                title: Text(sense.partOfSpeech.label),
+                subtitle: sense.example != null ? Text(sense.example!) : null,
+                onTap: () => Navigator.of(context).pop(sense),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+
+    if (chosen == null || !mounted) return;
     setState(() {
-      if (_partOfSpeechController.text.trim().isEmpty &&
-          result.partOfSpeech != null) {
-        _partOfSpeechController.text = result.partOfSpeech!;
-      }
-      if (_exampleController.text.trim().isEmpty && result.example != null) {
-        _exampleController.text = result.example!;
-      }
-      if (result.audioUrl != null) {
-        _audioUrl = result.audioUrl;
+      _selectedPos = chosen.partOfSpeech;
+      if (chosen.example != null) {
+        _exampleController.text = chosen.example!;
       }
     });
   }
@@ -98,12 +131,36 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     final english = _englishController.text.trim();
     final japanese = _emptyToNull(_japaneseController.text);
     final example = _emptyToNull(_exampleController.text);
-    final partOfSpeech = _emptyToNull(_partOfSpeechController.text);
-    final tagRepository = ref.read(tagRepositoryProvider);
+    final partOfSpeech = _selectedPos?.label;
 
-    final int wordId;
+    final duplicate = await repository.findExactDuplicate(
+      english: english,
+      japanese: japanese,
+      partOfSpeech: partOfSpeech,
+      excludingId: existing?.id,
+    );
+    if (duplicate != null) {
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('既に登録されています'),
+          content: Text(
+            '「$english」（${partOfSpeech ?? "品詞未設定"}・${japanese ?? "意味未設定"}）は既に登録済みです。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     if (existing == null) {
-      wordId = await repository.addWord(
+      await repository.addWord(
         english: english,
         japanese: japanese,
         exampleSentence: example,
@@ -111,7 +168,6 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
         audioUrl: _audioUrl,
       );
     } else {
-      wordId = existing.id;
       await repository.updateWord(
         id: existing.id,
         english: english,
@@ -121,7 +177,6 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
         audioUrl: _audioUrl,
       );
     }
-    await tagRepository.setTagsForWord(wordId, _tags);
 
     if (mounted) Navigator.of(context).pop();
   }
@@ -243,21 +298,16 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
               maxLines: 3,
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _partOfSpeechController,
+            DropdownButtonFormField<PartOfSpeech>(
+              initialValue: _selectedPos,
               decoration: const InputDecoration(labelText: '品詞（任意）'),
-            ),
-            const SizedBox(height: 12),
-            Consumer(
-              builder: (context, ref, _) {
-                final suggestions =
-                    ref.watch(allTagNamesProvider).value ?? [];
-                return TagInput(
-                  tags: _tags,
-                  suggestions: suggestions,
-                  onChanged: (tags) => setState(() => _tags = tags),
-                );
-              },
+              items: PartOfSpeech.values
+                  .map(
+                    (pos) =>
+                        DropdownMenuItem(value: pos, child: Text(pos.label)),
+                  )
+                  .toList(),
+              onChanged: (pos) => setState(() => _selectedPos = pos),
             ),
             const SizedBox(height: 24),
             FilledButton(

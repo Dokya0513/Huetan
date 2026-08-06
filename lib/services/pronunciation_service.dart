@@ -47,6 +47,14 @@ class PronunciationService {
     String? audioUrl,
     double volume = 1.0,
   }) async {
+    // Cut off whatever's still playing first — the Windows TTS engine only
+    // has one voice channel, so a rapid second tap gets silently dropped
+    // unless the in-flight utterance/clip is stopped before starting a new
+    // one. This makes playback always feel responsive, even if it means
+    // interrupting rather than truly overlapping.
+    await _audioPlayer.stop();
+    await _tts.stop();
+
     if (audioUrl != null && audioUrl.isNotEmpty) {
       try {
         await _audioPlayer.play(UrlSource(audioUrl), volume: volume);

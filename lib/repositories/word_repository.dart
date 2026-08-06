@@ -101,6 +101,59 @@ class WordRepository {
   Future<void> deleteWord(int id) =>
       (db.delete(db.words)..where((t) => t.id.equals(id))).go();
 
+  /// Finds an existing word whose english/japanese/partOfSpeech all match
+  /// exactly (english compared case/whitespace-insensitively) — used to
+  /// block accidental re-entry of the *same* sense of a word, while still
+  /// allowing the same english spelling to be registered again under a
+  /// different meaning/part of speech (e.g. "play" as a noun vs. a verb).
+  Future<Word?> findExactDuplicate({
+    required String english,
+    String? japanese,
+    String? partOfSpeech,
+    int? excludingId,
+  }) async {
+    final normalizedEnglish = english.trim().toLowerCase();
+    final all = await db.select(db.words).get();
+    for (final word in all) {
+      if (excludingId != null && word.id == excludingId) continue;
+      if (word.english.trim().toLowerCase() != normalizedEnglish) continue;
+      if (word.japanese != japanese) continue;
+      if (word.partOfSpeech != partOfSpeech) continue;
+      return word;
+    }
+    return null;
+  }
+
+  /// Fills partOfSpeech/exampleSentence/audioUrl for [id] only where those
+  /// fields are still empty — used to backfill quick-added words from a
+  /// background dictionary lookup without clobbering anything the user may
+  /// have already typed by hand in the meantime.
+  Future<void> fillDictionaryFieldsIfEmpty({
+    required int id,
+    String? partOfSpeech,
+    String? exampleSentence,
+    String? audioUrl,
+  }) async {
+    final word = await (db.select(
+      db.words,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    if (word == null) return;
+
+    await (db.update(db.words)..where((t) => t.id.equals(id))).write(
+      WordsCompanion(
+        partOfSpeech: word.partOfSpeech == null && partOfSpeech != null
+            ? Value(partOfSpeech)
+            : const Value.absent(),
+        exampleSentence: word.exampleSentence == null && exampleSentence != null
+            ? Value(exampleSentence)
+            : const Value.absent(),
+        audioUrl: word.audioUrl == null && audioUrl != null
+            ? Value(audioUrl)
+            : const Value.absent(),
+      ),
+    );
+  }
+
   /// Picks words for a flashcard session.
   ///
   /// If [count] is null or >= the number of available words, all words are

@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/character_advice.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 
 class CharacterCard extends ConsumerStatefulWidget {
-  const CharacterCard({super.key});
+  /// Which advice pool to show — defaults to the general home-tab advice.
+  /// Pass [calendarAdviceCandidatesProvider] etc. for tab-specific flavor.
+  final ProviderListenable<List<CharacterAdvice>>? adviceProvider;
+
+  const CharacterCard({super.key, this.adviceProvider});
 
   @override
   ConsumerState<CharacterCard> createState() => _CharacterCardState();
@@ -16,7 +21,9 @@ class _CharacterCardState extends ConsumerState<CharacterCard> {
 
   @override
   Widget build(BuildContext context) {
-    final candidates = ref.watch(characterAdviceCandidatesProvider);
+    final candidates = ref.watch(
+      widget.adviceProvider ?? characterAdviceCandidatesProvider,
+    );
     final colors = context.colors;
     final advice = candidates[_index % candidates.length];
     final canCycle = candidates.length > 1;

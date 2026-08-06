@@ -6,6 +6,7 @@ import '../providers/providers.dart';
 import '../repositories/activity_repository.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/character_card.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
@@ -123,6 +124,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   const SizedBox(width: 24),
                   _legend(colors.secondary, '暗記カードをやった日'),
                 ],
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: CharacterCard(
+                  adviceProvider: calendarAdviceCandidatesProvider,
+                ),
               ),
             ],
           );

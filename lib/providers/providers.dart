@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
 import '../models/character_advice.dart';
+import '../models/part_of_speech.dart';
 import '../repositories/activity_repository.dart';
 import '../repositories/stats_repository.dart';
-import '../repositories/tag_repository.dart';
 import '../repositories/word_repository.dart';
 import '../services/badge_unlock_service.dart';
 import '../services/pronunciation_service.dart';
@@ -145,50 +145,112 @@ final characterAdviceCandidatesProvider = Provider<List<CharacterAdvice>>((
     dueCount: dueCount,
     weakCount: weakCount,
     currentHour: DateTime.now().hour,
+    genreInsight: ref.watch(genreInsightProvider),
   );
 });
 
-final tagRepositoryProvider = Provider<TagRepository>((ref) {
-  return TagRepository(ref.watch(databaseProvider));
-});
+/// Threshold below which a part-of-speech category is considered "too small
+/// a sample" to base balance/weakness comments on.
+const _minPosSampleForInsight = 3;
 
-final wordTagsProvider = StreamProvider<List<WordTag>>((ref) {
-  return ref.watch(tagRepositoryProvider).watchAllWordTags();
-});
-
-final allTagNamesProvider = FutureProvider<List<String>>((ref) {
-  // Re-run whenever tag links change so autocomplete stays current.
-  ref.watch(wordTagsProvider);
-  return ref.watch(tagRepositoryProvider).getAllTagNames();
-});
-
-final wordTagsByWordIdProvider = Provider<Map<int, List<String>>>((ref) {
-  final links = ref.watch(wordTagsProvider).value ?? [];
-  final map = <int, List<String>>{};
-  for (final link in links) {
-    map.putIfAbsent(link.wordId, () => []).add(link.tag);
-  }
-  return map;
-});
-
-final tagDistributionProvider = Provider<List<TagCount>>((ref) {
+final genreInsightProvider = Provider<GenreInsight>((ref) {
   final words = ref.watch(allWordsProvider).value ?? [];
-  final wordTags = ref.watch(wordTagsProvider).value ?? [];
+  final posCounts = ref.watch(posDistributionProvider);
 
-  final counts = <String, int>{};
-  final taggedWordIds = <int>{};
-  for (final link in wordTags) {
-    counts[link.tag] = (counts[link.tag] ?? 0) + 1;
-    taggedWordIds.add(link.wordId);
+  String? dominantPos;
+  String? sparsePos;
+  var balanced = false;
+  if (posCounts.length >= _minPosSampleForInsight) {
+    final total = posCounts.fold<int>(0, (sum, t) => sum + t.count);
+    final max = posCounts.reduce((a, b) => a.count > b.count ? a : b);
+    final min = posCounts.reduce((a, b) => a.count < b.count ? a : b);
+    if (max.count / total >= 0.5) {
+      dominantPos = max.pos?.label;
+      sparsePos = min.pos?.label;
+    } else if (max.count - min.count <= 1) {
+      balanced = true;
+    }
   }
-  final untaggedCount = words
-      .where((w) => !taggedWordIds.contains(w.id))
-      .length;
 
-  final list = counts.entries.map((e) => TagCount(e.key, e.value)).toList()
+  final posTotals = <PartOfSpeech, int>{};
+  final posWeakCounts = <PartOfSpeech, int>{};
+  for (final word in words) {
+    if (word.partOfSpeech == null) continue;
+    final pos = mapToPartOfSpeech(word.partOfSpeech!);
+    posTotals[pos] = (posTotals[pos] ?? 0) + 1;
+    if (word.leitnerBox <= 2) {
+      posWeakCounts[pos] = (posWeakCounts[pos] ?? 0) + 1;
+    }
+  }
+  String? weakPos;
+  var bestWeakRatio = 0.0;
+  posTotals.forEach((pos, total) {
+    if (total < _minPosSampleForInsight) return;
+    final ratio = (posWeakCounts[pos] ?? 0) / total;
+    if (ratio >= 0.5 && ratio > bestWeakRatio) {
+      bestWeakRatio = ratio;
+      weakPos = pos.label;
+    }
+  });
+
+  return GenreInsight(
+    weakPos: weakPos,
+    dominantPos: dominantPos,
+    sparsePos: sparsePos,
+    balanced: balanced,
+  );
+});
+
+final calendarAdviceCandidatesProvider = Provider<List<CharacterAdvice>>((
+  ref,
+) {
+  final logs = ref.watch(activityLogsProvider).value ?? [];
+  final streak = ref.watch(streakProvider).value ?? 0;
+
+  final thirtyDaysAgo = dateOnly(
+    DateTime.now().subtract(const Duration(days: 30)),
+  );
+  final allActiveDays = <DateTime>{};
+  final recentActiveDays = <DateTime>{};
+  for (final log in logs) {
+    final day = dateOnly(log.date);
+    allActiveDays.add(day);
+    if (!day.isBefore(thirtyDaysAgo)) {
+      recentActiveDays.add(day);
+    }
+  }
+
+  return calendarAdviceCandidates(
+    streak: streak,
+    activeDaysLast30: recentActiveDays.length,
+    totalActiveDays: allActiveDays.length,
+  );
+});
+
+class PosCount {
+  final PartOfSpeech? pos;
+  final int count;
+  const PosCount(this.pos, this.count);
+}
+
+final posDistributionProvider = Provider<List<PosCount>>((ref) {
+  final words = ref.watch(allWordsProvider).value ?? [];
+
+  final counts = <PartOfSpeech, int>{};
+  var unsetCount = 0;
+  for (final word in words) {
+    if (word.partOfSpeech == null) {
+      unsetCount++;
+      continue;
+    }
+    final pos = mapToPartOfSpeech(word.partOfSpeech!);
+    counts[pos] = (counts[pos] ?? 0) + 1;
+  }
+
+  final list = counts.entries.map((e) => PosCount(e.key, e.value)).toList()
     ..sort((a, b) => b.count.compareTo(a.count));
-  if (untaggedCount > 0) {
-    list.add(TagCount('未分類', untaggedCount));
+  if (unsetCount > 0) {
+    list.add(PosCount(null, unsetCount));
   }
   return list;
 });

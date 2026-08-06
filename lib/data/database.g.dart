@@ -1291,261 +1291,12 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
   }
 }
 
-class $WordTagsTable extends WordTags with TableInfo<$WordTagsTable, WordTag> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $WordTagsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _wordIdMeta = const VerificationMeta('wordId');
-  @override
-  late final GeneratedColumn<int> wordId = GeneratedColumn<int>(
-    'word_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES words (id)',
-    ),
-  );
-  static const VerificationMeta _tagMeta = const VerificationMeta('tag');
-  @override
-  late final GeneratedColumn<String> tag = GeneratedColumn<String>(
-    'tag',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, wordId, tag];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'word_tags';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<WordTag> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('word_id')) {
-      context.handle(
-        _wordIdMeta,
-        wordId.isAcceptableOrUnknown(data['word_id']!, _wordIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_wordIdMeta);
-    }
-    if (data.containsKey('tag')) {
-      context.handle(
-        _tagMeta,
-        tag.isAcceptableOrUnknown(data['tag']!, _tagMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_tagMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
-    {wordId, tag},
-  ];
-  @override
-  WordTag map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return WordTag(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      wordId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}word_id'],
-      )!,
-      tag: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}tag'],
-      )!,
-    );
-  }
-
-  @override
-  $WordTagsTable createAlias(String alias) {
-    return $WordTagsTable(attachedDatabase, alias);
-  }
-}
-
-class WordTag extends DataClass implements Insertable<WordTag> {
-  final int id;
-  final int wordId;
-  final String tag;
-  const WordTag({required this.id, required this.wordId, required this.tag});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['word_id'] = Variable<int>(wordId);
-    map['tag'] = Variable<String>(tag);
-    return map;
-  }
-
-  WordTagsCompanion toCompanion(bool nullToAbsent) {
-    return WordTagsCompanion(
-      id: Value(id),
-      wordId: Value(wordId),
-      tag: Value(tag),
-    );
-  }
-
-  factory WordTag.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return WordTag(
-      id: serializer.fromJson<int>(json['id']),
-      wordId: serializer.fromJson<int>(json['wordId']),
-      tag: serializer.fromJson<String>(json['tag']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'wordId': serializer.toJson<int>(wordId),
-      'tag': serializer.toJson<String>(tag),
-    };
-  }
-
-  WordTag copyWith({int? id, int? wordId, String? tag}) => WordTag(
-    id: id ?? this.id,
-    wordId: wordId ?? this.wordId,
-    tag: tag ?? this.tag,
-  );
-  WordTag copyWithCompanion(WordTagsCompanion data) {
-    return WordTag(
-      id: data.id.present ? data.id.value : this.id,
-      wordId: data.wordId.present ? data.wordId.value : this.wordId,
-      tag: data.tag.present ? data.tag.value : this.tag,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('WordTag(')
-          ..write('id: $id, ')
-          ..write('wordId: $wordId, ')
-          ..write('tag: $tag')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, wordId, tag);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is WordTag &&
-          other.id == this.id &&
-          other.wordId == this.wordId &&
-          other.tag == this.tag);
-}
-
-class WordTagsCompanion extends UpdateCompanion<WordTag> {
-  final Value<int> id;
-  final Value<int> wordId;
-  final Value<String> tag;
-  const WordTagsCompanion({
-    this.id = const Value.absent(),
-    this.wordId = const Value.absent(),
-    this.tag = const Value.absent(),
-  });
-  WordTagsCompanion.insert({
-    this.id = const Value.absent(),
-    required int wordId,
-    required String tag,
-  }) : wordId = Value(wordId),
-       tag = Value(tag);
-  static Insertable<WordTag> custom({
-    Expression<int>? id,
-    Expression<int>? wordId,
-    Expression<String>? tag,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (wordId != null) 'word_id': wordId,
-      if (tag != null) 'tag': tag,
-    });
-  }
-
-  WordTagsCompanion copyWith({
-    Value<int>? id,
-    Value<int>? wordId,
-    Value<String>? tag,
-  }) {
-    return WordTagsCompanion(
-      id: id ?? this.id,
-      wordId: wordId ?? this.wordId,
-      tag: tag ?? this.tag,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (wordId.present) {
-      map['word_id'] = Variable<int>(wordId.value);
-    }
-    if (tag.present) {
-      map['tag'] = Variable<String>(tag.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('WordTagsCompanion(')
-          ..write('id: $id, ')
-          ..write('wordId: $wordId, ')
-          ..write('tag: $tag')
-          ..write(')'))
-        .toString();
-  }
-}
-
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $WordsTable words = $WordsTable(this);
   late final $ReviewLogsTable reviewLogs = $ReviewLogsTable(this);
   late final $ActivityLogsTable activityLogs = $ActivityLogsTable(this);
-  late final $WordTagsTable wordTags = $WordTagsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1554,7 +1305,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     words,
     reviewLogs,
     activityLogs,
-    wordTags,
   ];
 }
 
@@ -1604,25 +1354,6 @@ final class $$WordsTableReferences
     ).filter((f) => f.wordId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_reviewLogsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$WordTagsTable, List<WordTag>> _wordTagsRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.wordTags,
-    aliasName: 'words__id__word_tags__word_id',
-  );
-
-  $$WordTagsTableProcessedTableManager get wordTagsRefs {
-    final manager = $$WordTagsTableTableManager(
-      $_db,
-      $_db.wordTags,
-    ).filter((f) => f.wordId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_wordTagsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -1708,31 +1439,6 @@ class $$WordsTableFilterComposer extends Composer<_$AppDatabase, $WordsTable> {
           }) => $$ReviewLogsTableFilterComposer(
             $db: $db,
             $table: $db.reviewLogs,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> wordTagsRefs(
-    Expression<bool> Function($$WordTagsTableFilterComposer f) f,
-  ) {
-    final $$WordTagsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.wordTags,
-      getReferencedColumn: (t) => t.wordId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WordTagsTableFilterComposer(
-            $db: $db,
-            $table: $db.wordTags,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1884,31 +1590,6 @@ class $$WordsTableAnnotationComposer
     );
     return f(composer);
   }
-
-  Expression<T> wordTagsRefs<T extends Object>(
-    Expression<T> Function($$WordTagsTableAnnotationComposer a) f,
-  ) {
-    final $$WordTagsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.wordTags,
-      getReferencedColumn: (t) => t.wordId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WordTagsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.wordTags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$WordsTableTableManager
@@ -1924,7 +1605,7 @@ class $$WordsTableTableManager
           $$WordsTableUpdateCompanionBuilder,
           (Word, $$WordsTableReferences),
           Word,
-          PrefetchHooks Function({bool reviewLogsRefs, bool wordTagsRefs})
+          PrefetchHooks Function({bool reviewLogsRefs})
         > {
   $$WordsTableTableManager(_$AppDatabase db, $WordsTable table)
     : super(
@@ -1995,55 +1676,28 @@ class $$WordsTableTableManager
                     (e.readTable(table), $$WordsTableReferences(db, table, e)),
               )
               .toList(),
-          prefetchHooksCallback:
-              ({reviewLogsRefs = false, wordTagsRefs = false}) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (reviewLogsRefs) db.reviewLogs,
-                    if (wordTagsRefs) db.wordTags,
-                  ],
-                  addJoins: null,
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (reviewLogsRefs)
-                        await $_getPrefetchedData<Word, $WordsTable, ReviewLog>(
-                          currentTable: table,
-                          referencedTable: $$WordsTableReferences
-                              ._reviewLogsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WordsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).reviewLogsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.wordId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (wordTagsRefs)
-                        await $_getPrefetchedData<Word, $WordsTable, WordTag>(
-                          currentTable: table,
-                          referencedTable: $$WordsTableReferences
-                              ._wordTagsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$WordsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).wordTagsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.wordId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
+          prefetchHooksCallback: ({reviewLogsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (reviewLogsRefs) db.reviewLogs],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (reviewLogsRefs)
+                    await $_getPrefetchedData<Word, $WordsTable, ReviewLog>(
+                      currentTable: table,
+                      referencedTable: $$WordsTableReferences
+                          ._reviewLogsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$WordsTableReferences(db, table, p0).reviewLogsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.wordId == item.id),
+                      typedResults: items,
+                    ),
+                ];
               },
+            );
+          },
         ),
       );
 }
@@ -2060,7 +1714,7 @@ typedef $$WordsTableProcessedTableManager =
       $$WordsTableUpdateCompanionBuilder,
       (Word, $$WordsTableReferences),
       Word,
-      PrefetchHooks Function({bool reviewLogsRefs, bool wordTagsRefs})
+      PrefetchHooks Function({bool reviewLogsRefs})
     >;
 typedef $$ReviewLogsTableCreateCompanionBuilder =
     ReviewLogsCompanion Function({
@@ -2533,271 +2187,6 @@ typedef $$ActivityLogsTableProcessedTableManager =
       ActivityLog,
       PrefetchHooks Function()
     >;
-typedef $$WordTagsTableCreateCompanionBuilder =
-    WordTagsCompanion Function({
-      Value<int> id,
-      required int wordId,
-      required String tag,
-    });
-typedef $$WordTagsTableUpdateCompanionBuilder =
-    WordTagsCompanion Function({
-      Value<int> id,
-      Value<int> wordId,
-      Value<String> tag,
-    });
-
-final class $$WordTagsTableReferences
-    extends BaseReferences<_$AppDatabase, $WordTagsTable, WordTag> {
-  $$WordTagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $WordsTable _wordIdTable(_$AppDatabase db) =>
-      db.words.createAlias('word_tags__word_id__words__id');
-
-  $$WordsTableProcessedTableManager get wordId {
-    final $_column = $_itemColumn<int>('word_id')!;
-
-    final manager = $$WordsTableTableManager(
-      $_db,
-      $_db.words,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_wordIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $$WordTagsTableFilterComposer
-    extends Composer<_$AppDatabase, $WordTagsTable> {
-  $$WordTagsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get tag => $composableBuilder(
-    column: $table.tag,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$WordsTableFilterComposer get wordId {
-    final $$WordsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.wordId,
-      referencedTable: $db.words,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WordsTableFilterComposer(
-            $db: $db,
-            $table: $db.words,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$WordTagsTableOrderingComposer
-    extends Composer<_$AppDatabase, $WordTagsTable> {
-  $$WordTagsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get tag => $composableBuilder(
-    column: $table.tag,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$WordsTableOrderingComposer get wordId {
-    final $$WordsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.wordId,
-      referencedTable: $db.words,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WordsTableOrderingComposer(
-            $db: $db,
-            $table: $db.words,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$WordTagsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $WordTagsTable> {
-  $$WordTagsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get tag =>
-      $composableBuilder(column: $table.tag, builder: (column) => column);
-
-  $$WordsTableAnnotationComposer get wordId {
-    final $$WordsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.wordId,
-      referencedTable: $db.words,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$WordsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.words,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$WordTagsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $WordTagsTable,
-          WordTag,
-          $$WordTagsTableFilterComposer,
-          $$WordTagsTableOrderingComposer,
-          $$WordTagsTableAnnotationComposer,
-          $$WordTagsTableCreateCompanionBuilder,
-          $$WordTagsTableUpdateCompanionBuilder,
-          (WordTag, $$WordTagsTableReferences),
-          WordTag,
-          PrefetchHooks Function({bool wordId})
-        > {
-  $$WordTagsTableTableManager(_$AppDatabase db, $WordTagsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$WordTagsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$WordTagsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$WordTagsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<int> wordId = const Value.absent(),
-                Value<String> tag = const Value.absent(),
-              }) => WordTagsCompanion(id: id, wordId: wordId, tag: tag),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required int wordId,
-                required String tag,
-              }) => WordTagsCompanion.insert(id: id, wordId: wordId, tag: tag),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$WordTagsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({wordId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (wordId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.wordId,
-                                referencedTable: $$WordTagsTableReferences
-                                    ._wordIdTable(db),
-                                referencedColumn: $$WordTagsTableReferences
-                                    ._wordIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$WordTagsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $WordTagsTable,
-      WordTag,
-      $$WordTagsTableFilterComposer,
-      $$WordTagsTableOrderingComposer,
-      $$WordTagsTableAnnotationComposer,
-      $$WordTagsTableCreateCompanionBuilder,
-      $$WordTagsTableUpdateCompanionBuilder,
-      (WordTag, $$WordTagsTableReferences),
-      WordTag,
-      PrefetchHooks Function({bool wordId})
-    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2808,6 +2197,4 @@ class $AppDatabaseManager {
       $$ReviewLogsTableTableManager(_db, _db.reviewLogs);
   $$ActivityLogsTableTableManager get activityLogs =>
       $$ActivityLogsTableTableManager(_db, _db.activityLogs);
-  $$WordTagsTableTableManager get wordTags =>
-      $$WordTagsTableTableManager(_db, _db.wordTags);
 }

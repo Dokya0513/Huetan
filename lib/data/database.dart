@@ -9,14 +9,14 @@ import 'tables.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [Words, ReviewLogs, ActivityLogs, WordTags])
+@DriftDatabase(tables: [Words, ReviewLogs, ActivityLogs])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -45,11 +45,23 @@ class AppDatabase extends _$AppDatabase {
           if (from < 4) {
             // Words now support multiple tags via WordTags. Carry over the
             // old single free-text `tag` column as each word's first tag.
-            await m.createTable(wordTags);
+            await m.database.customStatement('''
+              CREATE TABLE IF NOT EXISTS word_tags (
+                id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                word_id INTEGER NOT NULL REFERENCES words (id),
+                tag TEXT NOT NULL,
+                UNIQUE (word_id, tag)
+              )
+            ''');
             await m.database.customStatement('''
               INSERT INTO word_tags (word_id, tag)
               SELECT id, tag FROM words WHERE tag IS NOT NULL AND tag != ''
             ''');
+          }
+          if (from < 5) {
+            // The tag system (WordTags) has been replaced by the fixed
+            // partOfSpeech categories — drop the now-unused table.
+            await m.database.customStatement('DROP TABLE IF EXISTS word_tags');
           }
         },
       );

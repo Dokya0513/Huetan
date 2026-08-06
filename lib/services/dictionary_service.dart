@@ -2,12 +2,21 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-class DictionaryLookupResult {
-  final String? partOfSpeech;
-  final String? example;
-  final String? audioUrl;
+import '../models/part_of_speech.dart';
 
-  DictionaryLookupResult({this.partOfSpeech, this.example, this.audioUrl});
+/// One grammatical sense of a looked-up word (e.g. "play" as a verb vs.
+/// as a noun) — the API often returns several, and letting the caller
+/// pick avoids silently assuming the first one is the one the user meant.
+class DictionarySense {
+  final PartOfSpeech partOfSpeech;
+  final String? example;
+  const DictionarySense({required this.partOfSpeech, this.example});
+}
+
+class DictionaryLookupResult {
+  final List<DictionarySense> senses;
+  final String? audioUrl;
+  const DictionaryLookupResult({required this.senses, this.audioUrl});
 }
 
 /// Looks up an English word using the free dictionaryapi.dev API
@@ -31,13 +40,21 @@ class DictionaryService {
       if (data is! List || data.isEmpty) return null;
       final entry = data.first as Map<String, dynamic>;
 
-      String? partOfSpeech;
-      String? example;
+      // Group by our (coarser) PartOfSpeech category, keeping the first
+      // example found for each — e.g. the API's "pronoun" and
+      // "preposition" both fold into 「その他」 rather than becoming
+      // separate picker entries.
+      final senses = <PartOfSpeech, String?>{};
       final meanings = entry['meanings'];
       if (meanings is List) {
         for (final meaning in meanings) {
           if (meaning is! Map<String, dynamic>) continue;
-          partOfSpeech ??= meaning['partOfSpeech'] as String?;
+          final apiPos = meaning['partOfSpeech'] as String?;
+          if (apiPos == null) continue;
+          final pos = mapToPartOfSpeech(apiPos);
+          if (senses.containsKey(pos)) continue;
+
+          String? example;
           final definitions = meaning['definitions'];
           if (definitions is List) {
             for (final definition in definitions) {
@@ -49,7 +66,7 @@ class DictionaryService {
               }
             }
           }
-          if (example != null) break;
+          senses[pos] = example;
         }
       }
 
@@ -66,9 +83,12 @@ class DictionaryService {
         }
       }
 
+      if (senses.isEmpty) return DictionaryLookupResult(senses: const [], audioUrl: audioUrl);
+
       return DictionaryLookupResult(
-        partOfSpeech: partOfSpeech,
-        example: example,
+        senses: senses.entries
+            .map((e) => DictionarySense(partOfSpeech: e.key, example: e.value))
+            .toList(),
         audioUrl: audioUrl,
       );
     } catch (_) {

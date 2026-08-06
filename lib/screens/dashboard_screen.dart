@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/providers.dart';
+import '../repositories/word_repository.dart';
+import '../services/dictionary_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/character_card.dart';
 import '../widgets/due_today_card.dart';
@@ -45,14 +49,34 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final english = _quickAddController.text.trim();
     if (english.isEmpty) return;
 
-    await ref.read(wordRepositoryProvider).addWord(english: english);
+    final repository = ref.read(wordRepositoryProvider);
+    final wordId = await repository.addWord(english: english);
     _quickAddController.clear();
+
+    // Fire-and-forget: fill in part of speech/example/audio from the
+    // dictionary in the background so quick-added words don't stay
+    // completely uncategorized, without making the user wait on a lookup.
+    unawaited(_backgroundDictionaryFill(repository, wordId, english));
+  }
+
+  Future<void> _backgroundDictionaryFill(
+    WordRepository repository,
+    int wordId,
+    String english,
+  ) async {
+    final result = await DictionaryService().lookup(english);
+    if (result == null || result.senses.isEmpty) return;
+    final sense = result.senses.first;
+    await repository.fillDictionaryFieldsIfEmpty(
+      id: wordId,
+      partOfSpeech: sense.partOfSpeech.label,
+      exampleSentence: sense.example,
+      audioUrl: result.audioUrl,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final streakAsync = ref.watch(streakProvider);
-
     ref.listen(badgeProgressProvider, (previous, next) {
       final unlockedIds = next
           .where((b) => b.unlocked)
@@ -82,21 +106,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           const CharacterCard(),
           const SizedBox(height: 16),
           const XpLevelBar(),
-          streakAsync.maybeWhen(
-            data: (streak) => streak > 0
-                ? Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '🔥 $streak日連続で学習中',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                  )
-                : const SizedBox.shrink(),
-            orElse: () => const SizedBox.shrink(),
-          ),
           const SizedBox(height: 16),
           Row(
             children: [

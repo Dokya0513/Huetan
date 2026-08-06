@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../models/part_of_speech.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
-import '../theme/tag_colors.dart';
+import '../theme/pos_colors.dart';
 import '../widgets/app_logo.dart';
 import 'flashcard_setup_screen.dart';
 import 'word_form_screen.dart';
 
-enum _SortMode { registered, alphabetical, weakness, tag }
+enum _SortMode { registered, alphabetical, weakness, partOfSpeech }
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -21,7 +22,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   _SortMode _sortMode = _SortMode.registered;
 
-  List<Word> _sorted(List<Word> words, Map<int, List<String>> tagsByWordId) {
+  List<Word> _sorted(List<Word> words) {
     final sorted = List<Word>.from(words);
     switch (_sortMode) {
       case _SortMode.registered:
@@ -36,13 +37,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           final keyB = b.lastReviewedAt == null ? 99 : b.leitnerBox;
           return keyA.compareTo(keyB);
         });
-      case _SortMode.tag:
-        String firstTag(Word w) {
-          final tags = tagsByWordId[w.id];
-          return (tags == null || tags.isEmpty) ? '\u{10FFFF}' : tags.first;
-        }
+      case _SortMode.partOfSpeech:
+        String posLabel(Word w) =>
+            w.partOfSpeech == null ? '\u{10FFFF}' : mapToPartOfSpeech(w.partOfSpeech!).label;
 
-        sorted.sort((a, b) => firstTag(a).compareTo(firstTag(b)));
+        sorted.sort((a, b) => posLabel(a).compareTo(posLabel(b)));
     }
     return sorted;
   }
@@ -50,10 +49,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final wordsAsync = ref.watch(allWordsProvider);
-    final tagsByWordId = ref.watch(wordTagsByWordIdProvider);
-    final allTagNames = ref.watch(allTagNamesProvider).value ?? [];
     final colors = context.colors;
-    final untaggedColor = colors.textSecondary.withValues(alpha: 0.35);
+    final unsetColor = colors.textSecondary.withValues(alpha: 0.35);
 
     return Scaffold(
       appBar: AppBar(
@@ -68,7 +65,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               PopupMenuItem(value: _SortMode.registered, child: Text('登録順')),
               PopupMenuItem(value: _SortMode.alphabetical, child: Text('ABC順')),
               PopupMenuItem(value: _SortMode.weakness, child: Text('苦手度順')),
-              PopupMenuItem(value: _SortMode.tag, child: Text('タグ順')),
+              PopupMenuItem(
+                value: _SortMode.partOfSpeech,
+                child: Text('品詞順'),
+              ),
             ],
           ),
           IconButton(
@@ -89,13 +89,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Text('まだ単語が登録されていません。「ホーム」タブの入力欄から追加してください。'),
             );
           }
-          final sortedWords = _sorted(words, tagsByWordId);
+          final sortedWords = _sorted(words);
           return ListView.separated(
             itemCount: sortedWords.length,
             separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final word = sortedWords[index];
-              final tags = tagsByWordId[word.id] ?? const [];
+              final pos = word.partOfSpeech != null
+                  ? mapToPartOfSpeech(word.partOfSpeech!)
+                  : null;
               return ListTile(
                 title: Text(
                   word.english,
@@ -113,27 +115,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             '訳未入力',
                             style: TextStyle(fontStyle: FontStyle.italic),
                           ),
-                    if (tags.isNotEmpty)
+                    if (pos != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Wrap(
-                          spacing: 4,
-                          children: tags
-                              .map(
-                                (tag) => Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: colorForTag(
-                                      tag,
-                                      allTagNames,
-                                      untaggedColor,
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              )
-                              .toList(),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: colorForPos(pos, unsetColor),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              pos.label,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                   ],
@@ -152,6 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             volume: ref.read(voiceVolumeProvider),
                           ),
                     ),
+                    const SizedBox(width: 6),
                     _BoxBadge(
                       box: word.leitnerBox,
                       isReviewed: word.lastReviewedAt != null,

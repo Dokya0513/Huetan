@@ -15,6 +15,7 @@ class WeeklyActivityStrip extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final logs = ref.watch(activityLogsProvider).value ?? [];
+    final streak = ref.watch(streakProvider).value ?? 0;
     final colors = context.colors;
 
     final flashcardDays = logs
@@ -38,12 +39,26 @@ class WeeklyActivityStrip extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '直近7日間',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: colors.textPrimary,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '直近7日間',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: colors.textPrimary,
+                  ),
+                ),
+              ),
+              if (streak > 0)
+                Text(
+                  '🔥 $streak日連続',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: colors.secondary,
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 10),
           Row(

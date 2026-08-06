@@ -33,6 +33,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Release build zips (attached to GitHub Releases instead of committed)
+*.zip
+
 # Symbolication related
 app.*.symbols
 

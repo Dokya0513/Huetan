@@ -3,18 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
-import '../theme/tag_colors.dart';
+import '../theme/pos_colors.dart';
 
 /// Stacked bar + legend showing how registered words are spread across
-/// tags, so lopsided coverage (e.g. mostly "ビジネス", barely any "旅行")
-/// is visible at a glance.
+/// parts of speech, so lopsided coverage (e.g. mostly verbs, barely any
+/// adjectives) is visible at a glance.
 class GenreDistributionBar extends ConsumerWidget {
   const GenreDistributionBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final distribution = ref.watch(tagDistributionProvider);
-    final allTagNames = ref.watch(allTagNamesProvider).value ?? [];
+    final distribution = ref.watch(posDistributionProvider);
     final colors = context.colors;
 
     if (distribution.isEmpty) {
@@ -22,7 +21,7 @@ class GenreDistributionBar extends ConsumerWidget {
     }
 
     final total = distribution.fold<int>(0, (sum, t) => sum + t.count);
-    final untaggedColor = colors.textSecondary.withValues(alpha: 0.35);
+    final unsetColor = colors.textSecondary.withValues(alpha: 0.35);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -35,7 +34,7 @@ class GenreDistributionBar extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'ジャンル内訳（全$total語）',
+            '品詞内訳（全$total語）',
             style: TextStyle(fontWeight: FontWeight.w700, color: colors.textPrimary),
           ),
           const SizedBox(height: 10),
@@ -49,7 +48,7 @@ class GenreDistributionBar extends ConsumerWidget {
                     Expanded(
                       flex: item.count,
                       child: Container(
-                        color: colorForTag(item.tag, allTagNames, untaggedColor),
+                        color: colorForPos(item.pos, unsetColor),
                       ),
                     ),
                 ],
@@ -68,17 +67,17 @@ class GenreDistributionBar extends ConsumerWidget {
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: colorForTag(item.tag, allTagNames, untaggedColor),
+                          color: colorForPos(item.pos, unsetColor),
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          item.tag,
+                          item.pos?.label ?? unsetPosLabel,
                           style: TextStyle(
                             fontSize: 12,
-                            color: item.tag == untaggedLabel
+                            color: item.pos == null
                                 ? colors.textSecondary
                                 : colors.textPrimary,
                           ),

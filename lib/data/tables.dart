@@ -28,20 +28,6 @@ class ReviewLogs extends Table {
   BoolColumn get isCorrect => boolean()();
 }
 
-/// A many-to-many tag on a word (a word can have multiple genre tags, and a
-/// tag can apply to many words). `tag` is the free-text label chosen by the
-/// user, e.g. "ビジネス" or "旅行".
-class WordTags extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get wordId => integer().references(Words, #id)();
-  TextColumn get tag => text()();
-
-  @override
-  List<Set<Column>> get uniqueKeys => [
-        {wordId, tag},
-      ];
-}
-
 /// Records that a given activity (app open / flashcard session) happened on
 /// a given calendar day. `date` is always truncated to midnight, and at
 /// most one row exists per (date, activityType) pair.
