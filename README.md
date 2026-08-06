@@ -1,17 +1,37 @@
-# english_learning
+# ふえたん
 
-A new Flutter project.
+会話で知らなかった英単語をサッと記録し、暗記カードで復習できる英単語学習アプリ。
 
-## Getting Started
+## 主な機能
 
-This project is a starting point for a Flutter application.
+- 単語の登録・編集（英単語 / 意味 / 例文 / 品詞 / 複数タグ）
+- クイック追加（英単語だけサッと登録し、意味は後から入力）
+- 暗記カード（Leitner Systemで苦手な単語ほど出題されやすい重み付け）
+- SRS方式の復習期限管理（正解を重ねるごとに次回復習までの間隔が伸びる）
+- 辞書API連携（品詞・例文・発音の自動取得）
+- 発音再生（辞書の音声 / 端末TTSの読み上げ）
+- XP・レベル、バッジ、連続学習日数（ストリーク）などのゲーミフィケーション
+- タグ別のジャンル内訳表示
+- マスコットキャラクターによる状況別コメント
+- ダークモード対応
 
-A few resources to get you started if this is your first Flutter project:
+## 技術構成
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- [Flutter](https://flutter.dev/) / Dart
+- [Drift](https://drift.simonbinder.eu/)（SQLiteベースのローカルDB）
+- [flutter_riverpod](https://riverpod.dev/)（状態管理）
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## セットアップ
+
+```bash
+flutter pub get
+flutter pub run build_runner build
+```
+
+## 実行
+
+```bash
+flutter run -d windows
+```
+
+Windows版のビルドには Visual Studio（C++ によるデスクトップ開発ワークロード）と `nuget.exe`（`flutter_tts` のビルドに使用）が必要です。
