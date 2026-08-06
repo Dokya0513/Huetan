@@ -1,0 +1,10 @@
+<svg width="380" height="112" viewBox="0 0 190 58" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700&amp;display=swap');
+    text { font-family: 'Zen Maru Gothic', sans-serif; font-weight: 700; }
+  </style>
+  <text x="0" y="42" font-size="34" fill="#1C1917">ふえ</text>
+  <rect x="76" y="6" width="100" height="46" rx="9" fill="#DB2777"/>
+  <path d="M164,6 L176,6 L176,18 Z" fill="#FFFFFF"/>
+  <text x="90" y="42" font-size="34" fill="#FFFFFF">たん</text>
+</svg>
