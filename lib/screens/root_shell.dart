@@ -18,11 +18,11 @@ class _RootShellState extends State<RootShell> {
   int _index = 0;
 
   static const _tabs = [
-    DashboardScreen(),
-    HomeScreen(),
-    WeakWordsScreen(),
-    CalendarScreen(),
-    BadgesScreen(),
+    RepaintBoundary(child: DashboardScreen()),
+    RepaintBoundary(child: HomeScreen()),
+    RepaintBoundary(child: WeakWordsScreen()),
+    RepaintBoundary(child: CalendarScreen()),
+    RepaintBoundary(child: BadgesScreen()),
   ];
 
   @override

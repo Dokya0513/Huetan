@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../models/cefr_level.dart';
 import '../models/character_advice.dart';
 import '../models/part_of_speech.dart';
 import '../repositories/activity_repository.dart';
 import '../repositories/stats_repository.dart';
 import '../repositories/word_repository.dart';
+import '../services/backup_service.dart';
 import '../services/badge_unlock_service.dart';
+import '../services/cefr_service.dart';
 import '../services/pronunciation_service.dart';
 import '../services/settings_service.dart';
 import '../services/sound_service.dart';
@@ -75,6 +78,10 @@ final levelInfoProvider = Provider<LevelInfo>((ref) {
 
 final settingsServiceProvider = Provider<SettingsService>((ref) {
   return SettingsService();
+});
+
+final backupServiceProvider = Provider<BackupService>((ref) {
+  return BackupService();
 });
 
 class VolumeNotifier extends StateNotifier<double> {
@@ -303,6 +310,46 @@ class BadgeUnlockNotifier extends StateNotifier<Map<String, DateTime>> {
 final badgeUnlockNotifierProvider =
     StateNotifierProvider<BadgeUnlockNotifier, Map<String, DateTime>>((ref) {
   return BadgeUnlockNotifier(ref.watch(badgeUnlockServiceProvider));
+});
+
+final cefrServiceProvider = Provider<CefrService>((ref) {
+  return CefrService();
+});
+
+final cefrWordlistProvider = FutureProvider<Map<String, CefrLevel>>((ref) {
+  return ref.watch(cefrServiceProvider).loadWordlist();
+});
+
+class CefrCount {
+  final CefrLevel? level;
+  final int count;
+  const CefrCount(this.level, this.count);
+}
+
+final cefrDistributionProvider = Provider<List<CefrCount>>((ref) {
+  final words = ref.watch(allWordsProvider).value ?? [];
+  final wordlist = ref.watch(cefrWordlistProvider).value;
+  if (wordlist == null || words.isEmpty) return const [];
+
+  final counts = <CefrLevel, int>{};
+  var outOfScope = 0;
+  for (final word in words) {
+    final level = wordlist[word.english.trim().toLowerCase()];
+    if (level == null) {
+      outOfScope++;
+      continue;
+    }
+    counts[level] = (counts[level] ?? 0) + 1;
+  }
+
+  final list = [
+    for (final level in CefrLevel.values)
+      if (counts[level] != null) CefrCount(level, counts[level]!),
+  ];
+  if (outOfScope > 0) {
+    list.add(CefrCount(null, outOfScope));
+  }
+  return list;
 });
 
 final recentBadgesProvider = Provider<List<BadgeProgress>>((ref) {

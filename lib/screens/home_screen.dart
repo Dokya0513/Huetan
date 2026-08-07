@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../models/cefr_level.dart';
 import '../models/part_of_speech.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
+import '../theme/cefr_colors.dart';
 import '../theme/pos_colors.dart';
 import '../widgets/app_logo.dart';
 import 'flashcard_setup_screen.dart';
@@ -49,6 +51,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final wordsAsync = ref.watch(allWordsProvider);
+    final cefrWordlist = ref.watch(cefrWordlistProvider).value;
     final colors = context.colors;
     final unsetColor = colors.textSecondary.withValues(alpha: 0.35);
 
@@ -98,6 +101,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               final pos = word.partOfSpeech != null
                   ? mapToPartOfSpeech(word.partOfSpeech!)
                   : null;
+              final cefr = cefrWordlist?[word.english.trim().toLowerCase()];
               return ListTile(
                 title: Text(
                   word.english,
@@ -115,28 +119,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             '訳未入力',
                             style: TextStyle(fontStyle: FontStyle.italic),
                           ),
-                    if (pos != null)
+                    if (pos != null || cefr != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Wrap(
+                          spacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: colorForPos(pos, unsetColor),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              pos.label,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: colors.textSecondary,
-                              ),
-                            ),
+                            if (pos != null) _PosPill(pos: pos, color: colorForPos(pos, unsetColor)),
+                            if (cefr != null) _CefrPill(level: cefr),
                           ],
                         ),
                       ),
@@ -186,6 +177,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
         icon: const Icon(Icons.style_outlined),
         label: const Text('暗記カード'),
+      ),
+    );
+  }
+}
+
+class _PosPill extends StatelessWidget {
+  final PartOfSpeech pos;
+  final Color color;
+  const _PosPill({required this.pos, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        pos.label,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+}
+
+class _CefrPill extends StatelessWidget {
+  final CefrLevel level;
+  const _CefrPill({required this.level});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = cefrColors[level]!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: color, width: 1.5),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        level.label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
       ),
     );
   }

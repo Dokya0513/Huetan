@@ -7,6 +7,7 @@ import '../providers/providers.dart';
 import '../repositories/word_repository.dart';
 import '../services/dictionary_service.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/cefr_distribution_bar.dart';
 import '../widgets/character_card.dart';
 import '../widgets/due_today_card.dart';
 import '../widgets/genre_distribution_bar.dart';
@@ -138,6 +139,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           const WeakWordsPreviewCard(),
           const SizedBox(height: 16),
           const GenreDistributionBar(),
+          const SizedBox(height: 16),
+          const CefrDistributionBar(),
         ],
       ),
     );

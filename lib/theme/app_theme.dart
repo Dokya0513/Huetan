@@ -53,8 +53,14 @@ class AppColors extends ThemeExtension<AppColors> {
 
   @override
   AppColors lerp(ThemeExtension<AppColors>? other, double t) {
-    // Colors don't animate between light/dark — the switch is instant.
-    return t < 0.5 ? this : (other as AppColors? ?? this);
+    // Colors don't animate between light/dark — MaterialApp wraps its
+    // subtree in an implicit AnimatedTheme, so without this override the
+    // framework would try to interpolate between two AppColors instances
+    // frame-by-frame. Snapping straight to the target on any lerp call
+    // (rather than waiting for t >= 0.5) avoids list rows catching a
+    // half-transitioned frame and staying visually stuck on the old
+    // theme's colors.
+    return (other as AppColors?) ?? this;
   }
 }
 
