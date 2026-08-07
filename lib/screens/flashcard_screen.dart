@@ -50,7 +50,9 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
 
   Future<void> _answer(bool isCorrect) async {
     final card = _cards[_index];
-    await ref.read(wordRepositoryProvider).recordAnswer(
+    await ref
+        .read(wordRepositoryProvider)
+        .recordAnswer(
           wordId: card.word.id,
           direction: card.direction,
           isCorrect: isCorrect,
@@ -111,10 +113,7 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
               curve: Curves.easeOutBack,
               builder: (context, value, child) => Opacity(
                 opacity: value.clamp(0, 1),
-                child: Transform.scale(
-                  scale: 0.6 + value * 0.6,
-                  child: child,
-                ),
+                child: Transform.scale(scale: 0.6 + value * 0.6, child: child),
               ),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -162,23 +161,21 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
       fontFamily: isEnglish ? englishDisplayFontFamily : 'Zen Maru Gothic',
     );
 
-    void speak() => ref.read(pronunciationServiceProvider).speak(
+    void speak() => ref
+        .read(pronunciationServiceProvider)
+        .speak(
           card.word.english,
           audioUrl: card.word.audioUrl,
           volume: ref.read(voiceVolumeProvider),
         );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${_index + 1} / ${_cards.length}'),
-      ),
+      appBar: AppBar(title: Text('${_index + 1} / ${_cards.length}')),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            LinearProgressIndicator(
-              value: (_index) / _cards.length,
-            ),
+            LinearProgressIndicator(value: (_index) / _cards.length),
             const SizedBox(height: 24),
             Expanded(
               child: GestureDetector(
@@ -215,9 +212,9 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
                                   const SizedBox(height: 16),
                                   Text(
                                     card.word.exampleSentence!,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium,
                                     textAlign: TextAlign.center,
                                   ),
                                 ],

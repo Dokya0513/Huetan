@@ -12,11 +12,9 @@ class StatsRepository {
   StatsRepository(this.db);
 
   Stream<int> watchXp() {
-    return (db.select(
-      db.reviewLogs,
-    )..where((t) => t.isCorrect.equals(true))).watch().map(
-      (rows) => rows.length * xpPerCorrectAnswer,
-    );
+    return (db.select(db.reviewLogs)..where((t) => t.isCorrect.equals(true)))
+        .watch()
+        .map((rows) => rows.length * xpPerCorrectAnswer);
   }
 }
 

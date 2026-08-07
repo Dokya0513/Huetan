@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/providers.dart';
-import '../screens/weak_words_screen.dart';
+import '../screens/home_screen.dart';
 import '../theme/app_theme.dart';
 
 /// Shows the weakest few words on the home dashboard, so trouble spots are
@@ -46,7 +46,7 @@ class WeakWordsPreviewCard extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const WeakWordsScreen(),
+                      builder: (_) => const HomeScreen(initialWeakOnly: true),
                     ),
                   );
                 },

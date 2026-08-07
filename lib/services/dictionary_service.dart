@@ -83,7 +83,8 @@ class DictionaryService {
         }
       }
 
-      if (senses.isEmpty) return DictionaryLookupResult(senses: const [], audioUrl: audioUrl);
+      if (senses.isEmpty)
+        return DictionaryLookupResult(senses: const [], audioUrl: audioUrl);
 
       return DictionaryLookupResult(
         senses: senses.entries

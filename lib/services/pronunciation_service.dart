@@ -90,14 +90,11 @@ class PronunciationService {
     try {
       final voices = await _tts.getVoices;
       if (voices is List) {
-        final englishVoice = voices.cast<Object?>().firstWhere(
-          (voice) {
-            if (voice is! Map) return false;
-            final locale = voice['locale']?.toString().toLowerCase() ?? '';
-            return locale.startsWith('en');
-          },
-          orElse: () => null,
-        );
+        final englishVoice = voices.cast<Object?>().firstWhere((voice) {
+          if (voice is! Map) return false;
+          final locale = voice['locale']?.toString().toLowerCase() ?? '';
+          return locale.startsWith('en');
+        }, orElse: () => null);
         if (englishVoice is Map) {
           await _tts.setVoice({
             'name': englishVoice['name'].toString(),

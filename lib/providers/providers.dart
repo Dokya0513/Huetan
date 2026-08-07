@@ -51,6 +51,49 @@ final streakProvider = FutureProvider.autoDispose<int>((ref) {
   return ref.watch(activityRepositoryProvider).currentStreak();
 });
 
+final reviewLogsProvider = StreamProvider<List<ReviewLog>>((ref) {
+  return ref.watch(wordRepositoryProvider).watchReviewLogs();
+});
+
+/// One day's worth of activity for the calendar's input/output chart:
+/// [added] = words registered that day, [reviewed] = distinct words
+/// reviewed that day (a word reviewed twice in one day still counts once).
+class DailyActivityCount {
+  final DateTime day;
+  final int added;
+  final int reviewed;
+  const DailyActivityCount(this.day, this.added, this.reviewed);
+}
+
+final dailyActivityCountsProvider = Provider<List<DailyActivityCount>>((ref) {
+  final words = ref.watch(allWordsProvider).value ?? [];
+  final reviewLogs = ref.watch(reviewLogsProvider).value ?? [];
+
+  final today = dateOnly(DateTime.now());
+  final days = List.generate(7, (i) => today.subtract(Duration(days: 6 - i)));
+
+  final addedByDay = <DateTime, int>{};
+  for (final word in words) {
+    final day = dateOnly(word.createdAt);
+    addedByDay[day] = (addedByDay[day] ?? 0) + 1;
+  }
+
+  final reviewedByDay = <DateTime, Set<int>>{};
+  for (final log in reviewLogs) {
+    final day = dateOnly(log.reviewedAt);
+    reviewedByDay.putIfAbsent(day, () => {}).add(log.wordId);
+  }
+
+  return [
+    for (final day in days)
+      DailyActivityCount(
+        day,
+        addedByDay[day] ?? 0,
+        reviewedByDay[day]?.length ?? 0,
+      ),
+  ];
+});
+
 final pronunciationServiceProvider = Provider<PronunciationService>((ref) {
   final service = PronunciationService();
   ref.onDispose(service.dispose);
@@ -87,8 +130,7 @@ final backupServiceProvider = Provider<BackupService>((ref) {
 class VolumeNotifier extends StateNotifier<double> {
   final SettingsService _settingsService;
   final VolumeChannel _channel;
-  VolumeNotifier(this._settingsService, this._channel)
-    : super(defaultVolume) {
+  VolumeNotifier(this._settingsService, this._channel) : super(defaultVolume) {
     _load();
   }
 
@@ -103,13 +145,19 @@ class VolumeNotifier extends StateNotifier<double> {
 }
 
 final seVolumeProvider = StateNotifierProvider<VolumeNotifier, double>((ref) {
-  return VolumeNotifier(ref.watch(settingsServiceProvider), VolumeChannel.soundEffect);
+  return VolumeNotifier(
+    ref.watch(settingsServiceProvider),
+    VolumeChannel.soundEffect,
+  );
 });
 
 final voiceVolumeProvider = StateNotifierProvider<VolumeNotifier, double>((
   ref,
 ) {
-  return VolumeNotifier(ref.watch(settingsServiceProvider), VolumeChannel.voice);
+  return VolumeNotifier(
+    ref.watch(settingsServiceProvider),
+    VolumeChannel.voice,
+  );
 });
 
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
@@ -141,11 +189,13 @@ final characterAdviceCandidatesProvider = Provider<List<CharacterAdvice>>((
   final wordCount = ref.watch(allWordsProvider).value?.length ?? 0;
   final streak = ref.watch(streakProvider).value ?? 0;
   final dueCount = ref.watch(dueWordsProvider).value?.length ?? 0;
-  final weakCount = ref
-      .watch(weakWordsProvider)
-      .value
-      ?.where((w) => w.leitnerBox <= 2)
-      .length ?? 0;
+  final weakCount =
+      ref
+          .watch(weakWordsProvider)
+          .value
+          ?.where((w) => w.leitnerBox <= 2)
+          .length ??
+      0;
   return characterAdviceCandidates(
     wordCount: wordCount,
     streak: streak,
@@ -208,9 +258,7 @@ final genreInsightProvider = Provider<GenreInsight>((ref) {
   );
 });
 
-final calendarAdviceCandidatesProvider = Provider<List<CharacterAdvice>>((
-  ref,
-) {
+final calendarAdviceCandidatesProvider = Provider<List<CharacterAdvice>>((ref) {
   final logs = ref.watch(activityLogsProvider).value ?? [];
   final streak = ref.watch(streakProvider).value ?? 0;
 
@@ -309,8 +357,8 @@ class BadgeUnlockNotifier extends StateNotifier<Map<String, DateTime>> {
 
 final badgeUnlockNotifierProvider =
     StateNotifierProvider<BadgeUnlockNotifier, Map<String, DateTime>>((ref) {
-  return BadgeUnlockNotifier(ref.watch(badgeUnlockServiceProvider));
-});
+      return BadgeUnlockNotifier(ref.watch(badgeUnlockServiceProvider));
+    });
 
 final cefrServiceProvider = Provider<CefrService>((ref) {
   return CefrService();

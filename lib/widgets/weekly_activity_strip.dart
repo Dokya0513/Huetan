@@ -24,10 +24,7 @@ class WeeklyActivityStrip extends ConsumerWidget {
         .toSet();
 
     final today = dateOnly(DateTime.now());
-    final days = List.generate(
-      7,
-      (i) => today.subtract(Duration(days: 6 - i)),
-    );
+    final days = List.generate(7, (i) => today.subtract(Duration(days: 6 - i)));
 
     return Container(
       padding: const EdgeInsets.all(16),

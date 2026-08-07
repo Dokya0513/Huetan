@@ -29,21 +29,22 @@ class WordRepository {
   WordRepository(this.db);
 
   Stream<List<Word>> watchAllWords() {
-    return (db.select(db.words)
-          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-        .watch();
+    return (db.select(
+      db.words,
+    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
   }
 
   Future<List<Word>> getAllWords() => db.select(db.words).get();
 
   /// Base query for words that can be quizzed (have a Japanese meaning),
   /// optionally restricted to ones due for review today or earlier
-  /// (including never-reviewed words, whose `nextReviewDate` is null).
+  /// (including never-reviewed words, whose `nextReviewDate` is null) and/or
+  /// to a specific part of speech.
   SimpleSelectStatement<$WordsTable, Word> _quizzableQuery({
     bool dueOnly = false,
+    String? partOfSpeech,
   }) {
-    final query = db.select(db.words)
-      ..where((t) => t.japanese.isNotNull());
+    final query = db.select(db.words)..where((t) => t.japanese.isNotNull());
     if (dueOnly) {
       final tomorrow = dateOnly(DateTime.now()).add(const Duration(days: 1));
       query.where(
@@ -51,6 +52,9 @@ class WordRepository {
             t.nextReviewDate.isNull() |
             t.nextReviewDate.isSmallerThanValue(tomorrow),
       );
+    }
+    if (partOfSpeech != null) {
+      query.where((t) => t.partOfSpeech.equals(partOfSpeech));
     }
     return query;
   }
@@ -68,7 +72,9 @@ class WordRepository {
     String? partOfSpeech,
     String? audioUrl,
   }) {
-    return db.into(db.words).insert(
+    return db
+        .into(db.words)
+        .insert(
           WordsCompanion.insert(
             english: english,
             japanese: Value(japanese),
@@ -156,6 +162,13 @@ class WordRepository {
 
   /// Picks words for a flashcard session.
   ///
+  /// [partOfSpeech] filters at the database level (an exact match on the
+  /// stored label). [extraFilter], if given, is applied afterward in Dart —
+  /// used for criteria that aren't stored columns, e.g. a word's CEFR level
+  /// (computed at runtime from the bundled wordlist) or whether its example
+  /// sentence actually contains the word (needed for the fill-in-the-blank
+  /// quiz mode).
+  ///
   /// If [count] is null or >= the number of available words, all words are
   /// returned in random order. Otherwise a weighted random sample (without
   /// replacement) is drawn, favoring words with a lower Leitner box (i.e.
@@ -163,8 +176,16 @@ class WordRepository {
   Future<List<Word>> selectSessionWords({
     int? count,
     bool dueOnly = false,
+    String? partOfSpeech,
+    bool Function(Word word)? extraFilter,
   }) async {
-    final all = await _quizzableQuery(dueOnly: dueOnly).get();
+    var all = await _quizzableQuery(
+      dueOnly: dueOnly,
+      partOfSpeech: partOfSpeech,
+    ).get();
+    if (extraFilter != null) {
+      all = all.where(extraFilter).toList();
+    }
     if (count == null || count >= all.length) {
       final shuffled = List<Word>.from(all)..shuffle();
       return shuffled;
@@ -179,8 +200,7 @@ class WordRepository {
           .toDouble();
       final key = pow(rand.nextDouble(), 1 / weight).toDouble();
       return MapEntry(key, word);
-    }).toList()
-      ..sort((a, b) => b.key.compareTo(a.key));
+    }).toList()..sort((a, b) => b.key.compareTo(a.key));
 
     return keyed.take(count).map((e) => e.value).toList();
   }
@@ -193,9 +213,9 @@ class WordRepository {
     required ReviewDirection direction,
     required bool isCorrect,
   }) async {
-    final word =
-        await (db.select(db.words)..where((t) => t.id.equals(wordId)))
-            .getSingle();
+    final word = await (db.select(
+      db.words,
+    )..where((t) => t.id.equals(wordId))).getSingle();
     final newBox = isCorrect
         ? (word.leitnerBox + 1).clamp(minLeitnerBox, maxLeitnerBox)
         : minLeitnerBox;
@@ -211,13 +231,21 @@ class WordRepository {
       ),
     );
 
-    await db.into(db.reviewLogs).insert(
+    await db
+        .into(db.reviewLogs)
+        .insert(
           ReviewLogsCompanion.insert(
             wordId: wordId,
             direction: direction.value,
             isCorrect: isCorrect,
           ),
         );
+  }
+
+  /// All review attempts ever logged — used to compute per-day activity
+  /// stats (e.g. distinct words reviewed per day) for the calendar screen.
+  Stream<List<ReviewLog>> watchReviewLogs() {
+    return db.select(db.reviewLogs).watch();
   }
 
   /// Words ordered from weakest (lowest box) to strongest. Never-reviewed

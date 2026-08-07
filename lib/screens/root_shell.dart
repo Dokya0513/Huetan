@@ -4,8 +4,8 @@ import '../theme/app_theme.dart';
 import 'badges_screen.dart';
 import 'calendar_screen.dart';
 import 'dashboard_screen.dart';
+import 'flashcard_setup_screen.dart';
 import 'home_screen.dart';
-import 'weak_words_screen.dart';
 
 class RootShell extends StatefulWidget {
   const RootShell({super.key});
@@ -20,7 +20,12 @@ class _RootShellState extends State<RootShell> {
   static const _tabs = [
     RepaintBoundary(child: DashboardScreen()),
     RepaintBoundary(child: HomeScreen()),
-    RepaintBoundary(child: WeakWordsScreen()),
+    RepaintBoundary(
+      child: FlashcardSetupScreen(
+        allowedModes: [QuizMode.choiceQuiz, QuizMode.fillBlank],
+        title: 'テスト',
+      ),
+    ),
     RepaintBoundary(child: CalendarScreen()),
     RepaintBoundary(child: BadgesScreen()),
   ];
@@ -47,9 +52,9 @@ class _RootShellState extends State<RootShell> {
             label: '単語',
           ),
           NavigationDestination(
-            icon: const Icon(Icons.warning_amber_outlined),
-            selectedIcon: Icon(Icons.warning_amber, color: colors.primary),
-            label: '苦手',
+            icon: const Icon(Icons.quiz_outlined),
+            selectedIcon: Icon(Icons.quiz, color: colors.primary),
+            label: 'テスト',
           ),
           NavigationDestination(
             icon: const Icon(Icons.calendar_month_outlined),

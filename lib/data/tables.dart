@@ -9,8 +9,7 @@ class Words extends Table {
   TextColumn get exampleSentence => text().nullable()();
   TextColumn get partOfSpeech => text().nullable()();
   TextColumn get tag => text().nullable()();
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   IntColumn get leitnerBox => integer().withDefault(const Constant(1))();
   DateTimeColumn get lastReviewedAt => dateTime().nullable()();
   // Pronunciation audio URL fetched from the dictionary lookup, if any.
@@ -22,8 +21,7 @@ class Words extends Table {
 class ReviewLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get wordId => integer().references(Words, #id)();
-  DateTimeColumn get reviewedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get reviewedAt => dateTime().withDefault(currentDateAndTime)();
   TextColumn get direction => text()();
   BoolColumn get isCorrect => boolean()();
 }
@@ -38,6 +36,6 @@ class ActivityLogs extends Table {
 
   @override
   List<Set<Column>> get uniqueKeys => [
-        {date, activityType},
-      ];
+    {date, activityType},
+  ];
 }

@@ -31,8 +31,9 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     final existing = widget.existing;
     _englishController = TextEditingController(text: existing?.english ?? '');
     _japaneseController = TextEditingController(text: existing?.japanese ?? '');
-    _exampleController =
-        TextEditingController(text: existing?.exampleSentence ?? '');
+    _exampleController = TextEditingController(
+      text: existing?.exampleSentence ?? '',
+    );
     _selectedPos = existing?.partOfSpeech != null
         ? mapToPartOfSpeech(existing!.partOfSpeech!)
         : null;
@@ -50,9 +51,9 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
   Future<void> _lookupDictionary() async {
     final word = _englishController.text.trim();
     if (word.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('先に英単語を入力してください')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('先に英単語を入力してください')));
       return;
     }
 
@@ -62,9 +63,9 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     setState(() => _isLookingUp = false);
 
     if (result == null || result.senses.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('辞書から情報を取得できませんでした')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('辞書から情報を取得できませんでした')));
       return;
     }
 
@@ -240,11 +241,9 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _englishController,
-                    decoration:
-                        const InputDecoration(labelText: '英単語 / フレーズ'),
-                    validator: (value) => (value == null || value.trim().isEmpty)
-                        ? '必須です'
-                        : null,
+                    decoration: const InputDecoration(labelText: '英単語 / フレーズ'),
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty) ? '必須です' : null,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -272,11 +271,13 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
                     onPressed: () {
                       final english = _englishController.text.trim();
                       if (english.isEmpty) return;
-                      ref.read(pronunciationServiceProvider).speak(
-                        english,
-                        audioUrl: _audioUrl,
-                        volume: ref.read(voiceVolumeProvider),
-                      );
+                      ref
+                          .read(pronunciationServiceProvider)
+                          .speak(
+                            english,
+                            audioUrl: _audioUrl,
+                            volume: ref.read(voiceVolumeProvider),
+                          );
                     },
                     tooltip: '発音を再生',
                     icon: const Icon(Icons.volume_up_outlined),
@@ -310,10 +311,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
               onChanged: (pos) => setState(() => _selectedPos = pos),
             ),
             const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _save,
-              child: const Text('保存'),
-            ),
+            FilledButton(onPressed: _save, child: const Text('保存')),
           ],
         ),
       ),

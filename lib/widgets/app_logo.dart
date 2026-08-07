@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../theme/app_theme.dart';
+
 /// The box-and-flashcards mark: cards (blue/pink/green) piling into an open
 /// box, representing the growing word collection.
 class AppIcon extends StatelessWidget {
@@ -9,11 +11,7 @@ class AppIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
-      'assets/logo/icon.svg',
-      width: size,
-      height: size,
-    );
+    return SvgPicture.asset('assets/logo/icon.svg', width: size, height: size);
   }
 }
 
@@ -36,7 +34,7 @@ class AppWordmark extends StatelessWidget {
             fontFamily: 'Zen Maru Gothic',
             fontWeight: FontWeight.w700,
             fontSize: fontSize,
-            color: const Color(0xFF1C1917),
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(width: 4),

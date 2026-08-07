@@ -15,7 +15,11 @@ import 'word_form_screen.dart';
 enum _SortMode { registered, alphabetical, weakness, partOfSpeech }
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  /// Opens the tab with the "苦手のみ" filter already on — used when
+  /// navigating here from the dashboard's weak-words preview card.
+  final bool initialWeakOnly;
+
+  const HomeScreen({super.key, this.initialWeakOnly = false});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -23,10 +27,43 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   _SortMode _sortMode = _SortMode.registered;
+  final _searchController = TextEditingController();
+  String _query = '';
+  late bool _weakOnly;
+
+  @override
+  void initState() {
+    super.initState();
+    _weakOnly = widget.initialWeakOnly;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Word> _filtered(List<Word> words) {
+    var result = words;
+    if (_weakOnly) {
+      result = result.where((w) => w.lastReviewedAt != null).toList();
+    }
+    if (_query.isNotEmpty) {
+      result = result.where((w) {
+        if (w.english.toLowerCase().contains(_query)) return true;
+        final japanese = w.japanese;
+        return japanese != null && japanese.toLowerCase().contains(_query);
+      }).toList();
+    }
+    return result;
+  }
 
   List<Word> _sorted(List<Word> words) {
+    // The 苦手のみ filter always shows weakest-first, matching what the old
+    // dedicated 苦手 tab did — the sort menu only applies to the full list.
+    final effectiveSortMode = _weakOnly ? _SortMode.weakness : _sortMode;
     final sorted = List<Word>.from(words);
-    switch (_sortMode) {
+    switch (effectiveSortMode) {
       case _SortMode.registered:
         break; // allWordsProvider already orders by createdAt desc.
       case _SortMode.alphabetical:
@@ -40,8 +77,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           return keyA.compareTo(keyB);
         });
       case _SortMode.partOfSpeech:
-        String posLabel(Word w) =>
-            w.partOfSpeech == null ? '\u{10FFFF}' : mapToPartOfSpeech(w.partOfSpeech!).label;
+        String posLabel(Word w) => w.partOfSpeech == null
+            ? '\u{10FFFF}'
+            : mapToPartOfSpeech(w.partOfSpeech!).label;
 
         sorted.sort((a, b) => posLabel(a).compareTo(posLabel(b)));
     }
@@ -68,19 +106,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               PopupMenuItem(value: _SortMode.registered, child: Text('登録順')),
               PopupMenuItem(value: _SortMode.alphabetical, child: Text('ABC順')),
               PopupMenuItem(value: _SortMode.weakness, child: Text('苦手度順')),
-              PopupMenuItem(
-                value: _SortMode.partOfSpeech,
-                child: Text('品詞順'),
-              ),
+              PopupMenuItem(value: _SortMode.partOfSpeech, child: Text('品詞順')),
             ],
           ),
           IconButton(
             icon: const Icon(Icons.playlist_add),
             tooltip: '単語を追加（詳細入力）',
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const WordFormScreen()),
-              );
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const WordFormScreen()));
             },
           ),
         ],
@@ -92,78 +127,132 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Text('まだ単語が登録されていません。「ホーム」タブの入力欄から追加してください。'),
             );
           }
-          final sortedWords = _sorted(words);
-          return ListView.separated(
-            itemCount: sortedWords.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final word = sortedWords[index];
-              final pos = word.partOfSpeech != null
-                  ? mapToPartOfSpeech(word.partOfSpeech!)
-                  : null;
-              final cefr = cefrWordlist?[word.english.trim().toLowerCase()];
-              return ListTile(
-                title: Text(
-                  word.english,
-                  style: const TextStyle(
-                    fontFamily: englishDisplayFontFamily,
-                    fontWeight: FontWeight.w700,
+          final sortedWords = _sorted(_filtered(words));
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: '英単語・意味で検索',
+                    prefixIcon: const Icon(Icons.search),
+                    isDense: true,
+                    suffixIcon: _query.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _query = '');
+                            },
+                          ),
+                  ),
+                  onChanged: (value) =>
+                      setState(() => _query = value.trim().toLowerCase()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilterChip(
+                    label: const Text('苦手のみ表示'),
+                    avatar: _weakOnly
+                        ? null
+                        : const Icon(Icons.warning_amber_outlined, size: 18),
+                    selected: _weakOnly,
+                    onSelected: (value) => setState(() => _weakOnly = value),
                   ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    word.japanese != null
-                        ? Text(word.japanese!)
-                        : const Text(
-                            '訳未入力',
-                            style: TextStyle(fontStyle: FontStyle.italic),
-                          ),
-                    if (pos != null || cefr != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Wrap(
-                          spacing: 6,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            if (pos != null) _PosPill(pos: pos, color: colorForPos(pos, unsetColor)),
-                            if (cefr != null) _CefrPill(level: cefr),
-                          ],
-                        ),
+              ),
+              Expanded(
+                child: sortedWords.isEmpty
+                    ? const Center(child: Text('該当する単語が見つかりませんでした'))
+                    : ListView.separated(
+                        itemCount: sortedWords.length,
+                        separatorBuilder: (_, _) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final word = sortedWords[index];
+                          final pos = word.partOfSpeech != null
+                              ? mapToPartOfSpeech(word.partOfSpeech!)
+                              : null;
+                          final cefr =
+                              cefrWordlist?[word.english.trim().toLowerCase()];
+                          return ListTile(
+                            title: Text(
+                              word.english,
+                              style: const TextStyle(
+                                fontFamily: englishDisplayFontFamily,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                word.japanese != null
+                                    ? Text(word.japanese!)
+                                    : const Text(
+                                        '訳未入力',
+                                        style: TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                if (pos != null || cefr != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 6),
+                                    child: Wrap(
+                                      spacing: 6,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      children: [
+                                        if (pos != null)
+                                          _PosPill(
+                                            pos: pos,
+                                            color: colorForPos(pos, unsetColor),
+                                          ),
+                                        if (cefr != null)
+                                          _CefrPill(level: cefr),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.volume_up_outlined),
+                                  tooltip: '発音を再生',
+                                  onPressed: () => ref
+                                      .read(pronunciationServiceProvider)
+                                      .speak(
+                                        word.english,
+                                        audioUrl: word.audioUrl,
+                                        volume: ref.read(voiceVolumeProvider),
+                                      ),
+                                ),
+                                const SizedBox(width: 6),
+                                _BoxBadge(
+                                  box: word.leitnerBox,
+                                  isReviewed: word.lastReviewedAt != null,
+                                  hasTranslation: word.japanese != null,
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      WordFormScreen(existing: word),
+                                ),
+                              );
+                            },
+                          );
+                        },
                       ),
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.volume_up_outlined),
-                      tooltip: '発音を再生',
-                      onPressed: () => ref
-                          .read(pronunciationServiceProvider)
-                          .speak(
-                            word.english,
-                            audioUrl: word.audioUrl,
-                            volume: ref.read(voiceVolumeProvider),
-                          ),
-                    ),
-                    const SizedBox(width: 6),
-                    _BoxBadge(
-                      box: word.leitnerBox,
-                      isReviewed: word.lastReviewedAt != null,
-                      hasTranslation: word.japanese != null,
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => WordFormScreen(existing: word),
-                    ),
-                  );
-                },
-              );
-            },
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -172,7 +261,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const FlashcardSetupScreen()),
+            MaterialPageRoute(
+              builder: (_) => const FlashcardSetupScreen(
+                allowedModes: [QuizMode.flashcard],
+              ),
+            ),
           );
         },
         icon: const Icon(Icons.style_outlined),

@@ -35,7 +35,10 @@ class GenreDistributionBar extends ConsumerWidget {
         children: [
           Text(
             '品詞内訳（全$total語）',
-            style: TextStyle(fontWeight: FontWeight.w700, color: colors.textPrimary),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: colors.textPrimary,
+            ),
           ),
           const SizedBox(height: 10),
           ClipRRect(

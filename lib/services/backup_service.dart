@@ -28,9 +28,7 @@ class BackupService {
 
   Future<void> saveToFile(String path, Map<String, dynamic> data) {
     final file = File(path);
-    return file.writeAsString(
-      const JsonEncoder.withIndent('  ').convert(data),
-    );
+    return file.writeAsString(const JsonEncoder.withIndent('  ').convert(data));
   }
 
   Future<Map<String, dynamic>> readFromFile(String path) async {
@@ -62,16 +60,14 @@ class BackupService {
             .insert(_wordFromJson(w), mode: InsertMode.insertOrReplace);
       }
       for (final r in reviewLogs) {
-        await db.into(db.reviewLogs).insert(
-              _reviewLogFromJson(r),
-              mode: InsertMode.insertOrReplace,
-            );
+        await db
+            .into(db.reviewLogs)
+            .insert(_reviewLogFromJson(r), mode: InsertMode.insertOrReplace);
       }
       for (final a in activityLogs) {
-        await db.into(db.activityLogs).insert(
-              _activityLogFromJson(a),
-              mode: InsertMode.insertOrReplace,
-            );
+        await db
+            .into(db.activityLogs)
+            .insert(_activityLogFromJson(a), mode: InsertMode.insertOrReplace);
       }
     });
   }

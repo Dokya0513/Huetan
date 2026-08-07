@@ -111,10 +111,7 @@ class SettingsScreen extends ConsumerWidget {
           _SectionHeader('音量'),
           const Text('効果音', style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text(
-            '正解時に鳴るチャイム音',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text('正解時に鳴るチャイム音', style: Theme.of(context).textTheme.bodySmall),
           Row(
             children: [
               const Icon(Icons.volume_down_outlined),
@@ -187,7 +184,11 @@ class SettingsScreen extends ConsumerWidget {
             '東京外国語大学投野由紀夫研究室\n'
             '(http://www.cefr-j.org/download.html より2026年8月ダウンロード)\n'
             '単語のCEFRレベル判定に使用',
-            style: TextStyle(fontSize: 11, color: colors.textSecondary, height: 1.5),
+            style: TextStyle(
+              fontSize: 11,
+              color: colors.textSecondary,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 24),
           const Divider(),

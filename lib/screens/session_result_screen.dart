@@ -21,7 +21,10 @@ class SessionResultScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('正答率 $rate%', style: Theme.of(context).textTheme.headlineMedium),
+            Text(
+              '正答率 $rate%',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
             const SizedBox(height: 16),
             Text('わかった: $correctCount'),
             Text('わからなかった: $incorrectCount'),

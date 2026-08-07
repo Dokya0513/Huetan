@@ -245,9 +245,7 @@ ThemeData buildAppTheme(Brightness brightness) {
           fontFamily: _bodyFontFamily,
           fontWeight: FontWeight.w700,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 14),
       ),
     ),
@@ -259,9 +257,7 @@ ThemeData buildAppTheme(Brightness brightness) {
           fontFamily: _bodyFontFamily,
           fontWeight: FontWeight.w700,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 14),
       ),
     ),

@@ -76,10 +76,7 @@ List<CharacterAdvice> characterAdviceCandidates({
 }) {
   if (wordCount == 0) {
     return const [
-      CharacterAdvice(
-        CharacterEmotion.beginnerPointing,
-        'まずは単語を登録してみよう！',
-      ),
+      CharacterAdvice(CharacterEmotion.beginnerPointing, 'まずは単語を登録してみよう！'),
       CharacterAdvice(
         CharacterEmotion.beginnerPointing,
         'ホームの入力欄からサクッと単語を追加できるよ',
@@ -92,14 +89,8 @@ List<CharacterAdvice> characterAdviceCandidates({
   if (streak == 0) {
     if (currentHour >= streakUrgentHour) {
       return const [
-        CharacterAdvice(
-          CharacterEmotion.angry,
-          '今日中に復習しないとストリークが途切れちゃうよ！急いで！',
-        ),
-        CharacterAdvice(
-          CharacterEmotion.angry,
-          'まだ間に合う…！今日の分だけでもやっておこう',
-        ),
+        CharacterAdvice(CharacterEmotion.angry, '今日中に復習しないとストリークが途切れちゃうよ！急いで！'),
+        CharacterAdvice(CharacterEmotion.angry, 'まだ間に合う…！今日の分だけでもやっておこう'),
       ];
     }
     return const [
@@ -107,10 +98,7 @@ List<CharacterAdvice> characterAdviceCandidates({
         CharacterEmotion.question,
         '今日はまだ復習してないね。時間があるときにやってみよう！',
       ),
-      CharacterAdvice(
-        CharacterEmotion.studyingPc,
-        '今日の分、いつやる？空き時間にサクッとどう？',
-      ),
+      CharacterAdvice(CharacterEmotion.studyingPc, '今日の分、いつやる？空き時間にサクッとどう？'),
     ];
   }
 
@@ -151,21 +139,21 @@ List<CharacterAdvice> characterAdviceCandidates({
   // analytical comment about genre balance/weakness when there's one to make.
   final base = switch (_timeBucketFor(currentHour)) {
     _TimeBucket.morning => const [
-        CharacterAdvice(CharacterEmotion.convinced, '☀️ 朝から偉い！その調子で一日を始めよう'),
-        CharacterAdvice(CharacterEmotion.convinced, 'おはよう！今日も一問からいこう'),
-      ],
+      CharacterAdvice(CharacterEmotion.convinced, '☀️ 朝から偉い！その調子で一日を始めよう'),
+      CharacterAdvice(CharacterEmotion.convinced, 'おはよう！今日も一問からいこう'),
+    ],
     _TimeBucket.day => const [
-        CharacterAdvice(CharacterEmotion.convinced, '今日もコツコツ偉い！'),
-        CharacterAdvice(CharacterEmotion.convinced, 'いい調子！このまま続けよう'),
-      ],
+      CharacterAdvice(CharacterEmotion.convinced, '今日もコツコツ偉い！'),
+      CharacterAdvice(CharacterEmotion.convinced, 'いい調子！このまま続けよう'),
+    ],
     _TimeBucket.evening => const [
-        CharacterAdvice(CharacterEmotion.convinced, '🌆 夕方も継続中、ナイスペース！'),
-        CharacterAdvice(CharacterEmotion.convinced, '一日お疲れさま、もうひと踏ん張りどう？'),
-      ],
+      CharacterAdvice(CharacterEmotion.convinced, '🌆 夕方も継続中、ナイスペース！'),
+      CharacterAdvice(CharacterEmotion.convinced, '一日お疲れさま、もうひと踏ん張りどう？'),
+    ],
     _TimeBucket.night => const [
-        CharacterAdvice(CharacterEmotion.convinced, '🌙 遅くまでお疲れさま、無理しすぎないでね'),
-        CharacterAdvice(CharacterEmotion.convinced, '今日も一日ありがとう、ゆっくり休んでね'),
-      ],
+      CharacterAdvice(CharacterEmotion.convinced, '🌙 遅くまでお疲れさま、無理しすぎないでね'),
+      CharacterAdvice(CharacterEmotion.convinced, '今日も一日ありがとう、ゆっくり休んでね'),
+    ],
   };
 
   return [...base, ..._genreAdvice(genreInsight)];
@@ -179,7 +167,10 @@ List<CharacterAdvice> _genreAdvice(GenreInsight? insight) {
   if (insight.weakPos != null) {
     final pos = insight.weakPos!;
     return [
-      CharacterAdvice(CharacterEmotion.troubled, '「$pos」でよく間違えてるみたい。重点的に復習してみる?'),
+      CharacterAdvice(
+        CharacterEmotion.troubled,
+        '「$pos」でよく間違えてるみたい。重点的に復習してみる?',
+      ),
       CharacterAdvice(CharacterEmotion.troubled, '「$pos」、ちょっと苦手そうだね。一緒に見直そう'),
     ];
   }
@@ -217,8 +208,14 @@ List<CharacterAdvice> calendarAdviceCandidates({
 }) {
   if (totalActiveDays == 0) {
     return const [
-      CharacterAdvice(CharacterEmotion.beginnerPointing, 'まずは今日、1日分の記録を作ってみよう！'),
-      CharacterAdvice(CharacterEmotion.beginnerPointing, 'カレンダーに色がつくと楽しいよ、やってみよう'),
+      CharacterAdvice(
+        CharacterEmotion.beginnerPointing,
+        'まずは今日、1日分の記録を作ってみよう！',
+      ),
+      CharacterAdvice(
+        CharacterEmotion.beginnerPointing,
+        'カレンダーに色がつくと楽しいよ、やってみよう',
+      ),
     ];
   }
 
