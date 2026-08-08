@@ -67,7 +67,7 @@ class BadgesScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          badge.title,
+                          badge.title(l10n),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: 'Zen Maru Gothic',
@@ -80,7 +80,7 @@ class BadgesScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          badge.description,
+                          badge.description(l10n),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 11,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 
 const int xpPerCorrectAnswer = 10;
 const int xpPerLevel = 100;
@@ -39,10 +40,13 @@ class StatsSnapshot {
   });
 }
 
+/// [title]/[description] are closures rather than resolved [String]s because
+/// [badgeDefinitions] is a top-level list built with no [BuildContext]
+/// access — resolution happens wherever a badge is displayed instead.
 class BadgeDef {
   final String id;
-  final String title;
-  final String description;
+  final String Function(AppLocalizations l10n) title;
+  final String Function(AppLocalizations l10n) description;
   final IconData icon;
   final bool Function(StatsSnapshot) isUnlocked;
   const BadgeDef({
@@ -63,57 +67,57 @@ class BadgeProgress {
 final List<BadgeDef> badgeDefinitions = [
   BadgeDef(
     id: 'first_word',
-    title: 'はじめの一歩',
-    description: '単語を1つ登録した',
+    title: (l10n) => l10n.badgeFirstWordTitle,
+    description: (l10n) => l10n.badgeFirstWordDescription,
     icon: Icons.edit_note,
     isUnlocked: (s) => s.wordCount >= 1,
   ),
   BadgeDef(
     id: 'word_50',
-    title: '単語コレクター',
-    description: '単語を50個登録した',
+    title: (l10n) => l10n.badgeWord50Title,
+    description: (l10n) => l10n.badgeWord50Description,
     icon: Icons.collections_bookmark,
     isUnlocked: (s) => s.wordCount >= 50,
   ),
   BadgeDef(
     id: 'word_100',
-    title: '単語マスター',
-    description: '単語を100個登録した',
+    title: (l10n) => l10n.badgeWord100Title,
+    description: (l10n) => l10n.badgeWord100Description,
     icon: Icons.workspace_premium,
     isUnlocked: (s) => s.wordCount >= 100,
   ),
   BadgeDef(
     id: 'streak_3',
-    title: '3日坊主卒業',
-    description: '3日連続で学習した',
+    title: (l10n) => l10n.badgeStreak3Title,
+    description: (l10n) => l10n.badgeStreak3Description,
     icon: Icons.local_fire_department,
     isUnlocked: (s) => s.streak >= 3,
   ),
   BadgeDef(
     id: 'streak_7',
-    title: '継続は力なり',
-    description: '7日連続で学習した',
+    title: (l10n) => l10n.badgeStreak7Title,
+    description: (l10n) => l10n.badgeStreak7Description,
     icon: Icons.local_fire_department,
     isUnlocked: (s) => s.streak >= 7,
   ),
   BadgeDef(
     id: 'streak_30',
-    title: 'がんばり屋',
-    description: '30日連続で学習した',
+    title: (l10n) => l10n.badgeStreak30Title,
+    description: (l10n) => l10n.badgeStreak30Description,
     icon: Icons.local_fire_department,
     isUnlocked: (s) => s.streak >= 30,
   ),
   BadgeDef(
     id: 'correct_1',
-    title: 'はじめての正解',
-    description: '暗記カードで1問正解した',
+    title: (l10n) => l10n.badgeCorrect1Title,
+    description: (l10n) => l10n.badgeCorrect1Description,
     icon: Icons.check_circle,
     isUnlocked: (s) => s.correctCount >= 1,
   ),
   BadgeDef(
     id: 'correct_100',
-    title: '百戦錬磨',
-    description: '累計100問正解した',
+    title: (l10n) => l10n.badgeCorrect100Title,
+    description: (l10n) => l10n.badgeCorrect100Description,
     icon: Icons.military_tech,
     isUnlocked: (s) => s.correctCount >= 100,
   ),

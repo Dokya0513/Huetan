@@ -319,5 +319,22 @@
   "adviceCalActive3_1": "少しずつでも学べてるの、ちゃんと積み重なってるよ！",
   "adviceCalActive3_2": "その調子！焦らずコツコツいこう",
   "adviceCalDefault1": "継続は力なり。また今日から積み重ねていこう！",
-  "adviceCalDefault2": "一歩ずつでいいよ、また始めてみよう！"
+  "adviceCalDefault2": "一歩ずつでいいよ、また始めてみよう！",
+
+  "badgeFirstWordTitle": "はじめの一歩",
+  "badgeFirstWordDescription": "単語を1つ登録した",
+  "badgeWord50Title": "単語コレクター",
+  "badgeWord50Description": "単語を50個登録した",
+  "badgeWord100Title": "単語マスター",
+  "badgeWord100Description": "単語を100個登録した",
+  "badgeStreak3Title": "3日坊主卒業",
+  "badgeStreak3Description": "3日連続で学習した",
+  "badgeStreak7Title": "継続は力なり",
+  "badgeStreak7Description": "7日連続で学習した",
+  "badgeStreak30Title": "がんばり屋",
+  "badgeStreak30Description": "30日連続で学習した",
+  "badgeCorrect1Title": "はじめての正解",
+  "badgeCorrect1Description": "暗記カードで1問正解した",
+  "badgeCorrect100Title": "百戦錬磨",
+  "badgeCorrect100Description": "累計100問正解した"
 }

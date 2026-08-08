@@ -65,7 +65,7 @@ class RecentBadgesCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        progress.badge.title,
+                        progress.badge.title(l10n),
                         style: TextStyle(
                           fontSize: 11,
                           color: colors.textSecondary,

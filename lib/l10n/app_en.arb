@@ -210,5 +210,22 @@
   "adviceCalActive3_1": "Even a little at a time, it's adding up!",
   "adviceCalActive3_2": "That's the spirit! Slow and steady wins it",
   "adviceCalDefault1": "Consistency is key. Let's start building it up again from today!",
-  "adviceCalDefault2": "One step at a time is fine, let's start again!"
+  "adviceCalDefault2": "One step at a time is fine, let's start again!",
+
+  "badgeFirstWordTitle": "First Step",
+  "badgeFirstWordDescription": "Registered your first word",
+  "badgeWord50Title": "Word Collector",
+  "badgeWord50Description": "Registered 50 words",
+  "badgeWord100Title": "Word Master",
+  "badgeWord100Description": "Registered 100 words",
+  "badgeStreak3Title": "Past the 3-Day Wall",
+  "badgeStreak3Description": "Studied 3 days in a row",
+  "badgeStreak7Title": "Consistency Is Power",
+  "badgeStreak7Description": "Studied 7 days in a row",
+  "badgeStreak30Title": "Hard Worker",
+  "badgeStreak30Description": "Studied 30 days in a row",
+  "badgeCorrect1Title": "First Correct Answer",
+  "badgeCorrect1Description": "Got a flashcard answer right",
+  "badgeCorrect100Title": "Battle-Tested",
+  "badgeCorrect100Description": "100 correct answers total"
 }
