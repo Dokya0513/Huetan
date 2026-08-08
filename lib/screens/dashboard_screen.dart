@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../repositories/word_repository.dart';
 import '../services/dictionary_service.dart';
@@ -86,13 +87,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ref.read(badgeUnlockNotifierProvider.notifier).markUnlocked(unlockedIds);
     });
 
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const AppTitleRow(title: 'ホーム'),
+        title: AppTitleRow(title: l10n.navHome),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            tooltip: '設定',
+            tooltip: l10n.settingsTooltip,
             onPressed: () {
               Navigator.of(
                 context,
@@ -113,10 +115,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               Expanded(
                 child: TextField(
                   controller: _quickAddController,
-                  decoration: const InputDecoration(
-                    hintText: '英単語をサッと追加（意味は後で入力）',
+                  decoration: InputDecoration(
+                    hintText: l10n.dashboardQuickAddHint,
                     isDense: true,
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   onSubmitted: (_) => _quickAdd(),
                 ),
@@ -125,7 +127,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               IconButton.filledTonal(
                 onPressed: _quickAdd,
                 icon: const Icon(Icons.add),
-                tooltip: '追加',
+                tooltip: l10n.addTooltip,
               ),
             ],
           ),

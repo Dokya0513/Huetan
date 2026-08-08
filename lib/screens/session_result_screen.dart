@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 class SessionResultScreen extends StatelessWidget {
   final int correctCount;
   final int incorrectCount;
@@ -14,25 +16,26 @@ class SessionResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = correctCount + incorrectCount;
     final rate = total == 0 ? 0 : (correctCount / total * 100).round();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('結果')),
+      appBar: AppBar(title: Text(l10n.resultTitle)),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '正答率 $rate%',
+              l10n.resultAccuracyRate(rate),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 16),
-            Text('わかった: $correctCount'),
-            Text('わからなかった: $incorrectCount'),
+            Text(l10n.resultCorrectCount(correctCount)),
+            Text(l10n.resultIncorrectCount(incorrectCount)),
             const SizedBox(height: 32),
             FilledButton(
               onPressed: () =>
                   Navigator.of(context).popUntil((route) => route.isFirst),
-              child: const Text('ホームに戻る'),
+              child: Text(l10n.resultBackToHome),
             ),
           ],
         ),

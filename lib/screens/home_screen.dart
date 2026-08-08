@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../models/cefr_level.dart';
 import '../models/part_of_speech.dart';
 import '../providers/providers.dart';
@@ -92,26 +93,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final cefrWordlist = ref.watch(cefrWordlistProvider).value;
     final colors = context.colors;
     final unsetColor = colors.textSecondary.withValues(alpha: 0.35);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const AppTitleRow(title: '単語'),
+        title: AppTitleRow(title: l10n.navWords),
         actions: [
           PopupMenuButton<_SortMode>(
             icon: const Icon(Icons.sort),
-            tooltip: '並び替え',
+            tooltip: l10n.sortTooltip,
             initialValue: _sortMode,
             onSelected: (mode) => setState(() => _sortMode = mode),
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: _SortMode.registered, child: Text('登録順')),
-              PopupMenuItem(value: _SortMode.alphabetical, child: Text('ABC順')),
-              PopupMenuItem(value: _SortMode.weakness, child: Text('苦手度順')),
-              PopupMenuItem(value: _SortMode.partOfSpeech, child: Text('品詞順')),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: _SortMode.registered,
+                child: Text(l10n.sortRegistered),
+              ),
+              PopupMenuItem(
+                value: _SortMode.alphabetical,
+                child: Text(l10n.sortAlphabetical),
+              ),
+              PopupMenuItem(
+                value: _SortMode.weakness,
+                child: Text(l10n.sortWeakness),
+              ),
+              PopupMenuItem(
+                value: _SortMode.partOfSpeech,
+                child: Text(l10n.sortPartOfSpeech),
+              ),
             ],
           ),
           IconButton(
             icon: const Icon(Icons.playlist_add),
-            tooltip: '単語を追加（詳細入力）',
+            tooltip: l10n.addWordTooltip,
             onPressed: () {
               Navigator.of(
                 context,
@@ -123,9 +137,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: wordsAsync.when(
         data: (words) {
           if (words.isEmpty) {
-            return const Center(
-              child: Text('まだ単語が登録されていません。「ホーム」タブの入力欄から追加してください。'),
-            );
+            return Center(child: Text(l10n.emptyWordsMessage));
           }
           final sortedWords = _sorted(_filtered(words));
           return Column(
@@ -135,7 +147,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: '英単語・意味で検索',
+                    hintText: l10n.searchHint,
                     prefixIcon: const Icon(Icons.search),
                     isDense: true,
                     suffixIcon: _query.isEmpty
@@ -157,7 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: FilterChip(
-                    label: const Text('苦手のみ表示'),
+                    label: Text(l10n.weakOnlyFilterLabel),
                     avatar: _weakOnly
                         ? null
                         : const Icon(Icons.warning_amber_outlined, size: 18),
@@ -168,7 +180,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               Expanded(
                 child: sortedWords.isEmpty
-                    ? const Center(child: Text('該当する単語が見つかりませんでした'))
+                    ? Center(child: Text(l10n.noMatchingWords))
                     : ListView.separated(
                         itemCount: sortedWords.length,
                         separatorBuilder: (_, _) => const Divider(height: 1),
@@ -192,9 +204,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 word.japanese != null
                                     ? Text(word.japanese!)
-                                    : const Text(
-                                        '訳未入力',
-                                        style: TextStyle(
+                                    : Text(
+                                        l10n.noTranslationYet,
+                                        style: const TextStyle(
                                           fontStyle: FontStyle.italic,
                                         ),
                                       ),
@@ -223,7 +235,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.volume_up_outlined),
-                                  tooltip: '発音を再生',
+                                  tooltip: l10n.playPronunciationTooltip,
                                   onPressed: () => ref
                                       .read(pronunciationServiceProvider)
                                       .speak(
@@ -256,7 +268,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('エラー: $error')),
+        error: (error, stack) =>
+            Center(child: Text(l10n.errorWithMessage(error.toString()))),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -269,7 +282,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         },
         icon: const Icon(Icons.style_outlined),
-        label: const Text('暗記カード'),
+        label: Text(l10n.flashcardFabLabel),
       ),
     );
   }
@@ -338,11 +351,12 @@ class _BoxBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final String label;
     final Color color;
     final Color backgroundColor;
     if (!hasTranslation) {
-      label = '未設定';
+      label = l10n.boxUnsetLabel;
       color = colors.textSecondary;
       backgroundColor = colors.textSecondary.withValues(alpha: 0.15);
     } else if (!isReviewed) {

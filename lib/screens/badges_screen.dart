@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
@@ -13,15 +14,16 @@ class BadgesScreen extends ConsumerWidget {
     final badges = ref.watch(badgeProgressProvider);
     final unlockedCount = badges.where((b) => b.unlocked).length;
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const AppTitleRow(title: 'バッジ')),
+      appBar: AppBar(title: AppTitleRow(title: l10n.navBadges)),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              '解錠済み: $unlockedCount / ${badges.length}',
+              l10n.badgesUnlockedCount(unlockedCount, badges.length),
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ),

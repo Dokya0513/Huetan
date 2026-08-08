@@ -26,5 +26,39 @@
   "onboardingTestDescription": "Three review modes: flashcards, multiple choice, and fill-in-the-blank. Words you're weaker on show up more often.",
 
   "onboardingCalendarBadgesTitle": "Calendar & Badges",
-  "onboardingCalendarBadgesDescription": "Track your study history on the calendar and your achievements with badges. Try to keep it up every day!"
+  "onboardingCalendarBadgesDescription": "Track your study history on the calendar and your achievements with badges. Try to keep it up every day!",
+
+  "calendarTitle": "Study Calendar",
+  "calendarStreakActive": "🔥 On a {days}-day streak!",
+  "calendarStreakNone": "No streak yet",
+  "calendarLegendAppOpen": "Days you opened the app",
+  "calendarLegendFlashcard": "Days you did flashcards",
+  "errorWithMessage": "Error: {message}",
+
+  "settingsTooltip": "Settings",
+  "dashboardQuickAddHint": "Quickly add an English word (add the meaning later)",
+  "addTooltip": "Add",
+
+  "badgesUnlockedCount": "Unlocked: {unlocked} / {total}",
+
+  "resultTitle": "Result",
+  "resultAccuracyRate": "Accuracy {rate}%",
+  "resultCorrectCount": "Correct: {count}",
+  "resultIncorrectCount": "Incorrect: {count}",
+  "resultBackToHome": "Back to Home",
+
+  "sortTooltip": "Sort",
+  "sortRegistered": "Date added",
+  "sortAlphabetical": "A-Z",
+  "sortWeakness": "Weakest first",
+  "sortPartOfSpeech": "Part of speech",
+  "addWordTooltip": "Add a word (full details)",
+  "emptyWordsMessage": "No words yet. Add one from the input field on the Home tab.",
+  "searchHint": "Search by word or meaning",
+  "weakOnlyFilterLabel": "Weak words only",
+  "noMatchingWords": "No matching words found",
+  "noTranslationYet": "No translation yet",
+  "playPronunciationTooltip": "Play pronunciation",
+  "flashcardFabLabel": "Flashcards",
+  "boxUnsetLabel": "Unset"
 }

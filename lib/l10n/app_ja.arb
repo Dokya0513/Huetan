@@ -29,5 +29,60 @@
   "onboardingTestDescription": "暗記カード・4択クイズ・穴埋めクイズの3種類。苦手な単語ほど出題されやすくなっています。",
 
   "onboardingCalendarBadgesTitle": "カレンダー・バッジ",
-  "onboardingCalendarBadgesDescription": "学習の記録はカレンダーで、達成状況はバッジで確認できます。毎日コツコツ続けてみましょう！"
+  "onboardingCalendarBadgesDescription": "学習の記録はカレンダーで、達成状況はバッジで確認できます。毎日コツコツ続けてみましょう！",
+
+  "calendarTitle": "学習カレンダー",
+  "calendarStreakActive": "🔥 {days}日連続で学習中！",
+  "@calendarStreakActive": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "calendarStreakNone": "まだ連続記録はありません",
+  "calendarLegendAppOpen": "アプリを開いた日",
+  "calendarLegendFlashcard": "暗記カードをやった日",
+  "errorWithMessage": "エラー: {message}",
+  "@errorWithMessage": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "settingsTooltip": "設定",
+  "dashboardQuickAddHint": "英単語をサッと追加（意味は後で入力）",
+  "addTooltip": "追加",
+
+  "badgesUnlockedCount": "解錠済み: {unlocked} / {total}",
+  "@badgesUnlockedCount": {
+    "placeholders": {
+      "unlocked": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "resultTitle": "結果",
+  "resultAccuracyRate": "正答率 {rate}%",
+  "@resultAccuracyRate": {
+    "placeholders": { "rate": { "type": "int" } }
+  },
+  "resultCorrectCount": "わかった: {count}",
+  "@resultCorrectCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "resultIncorrectCount": "わからなかった: {count}",
+  "@resultIncorrectCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "resultBackToHome": "ホームに戻る",
+
+  "sortTooltip": "並び替え",
+  "sortRegistered": "登録順",
+  "sortAlphabetical": "ABC順",
+  "sortWeakness": "苦手度順",
+  "sortPartOfSpeech": "品詞順",
+  "addWordTooltip": "単語を追加（詳細入力）",
+  "emptyWordsMessage": "まだ単語が登録されていません。「ホーム」タブの入力欄から追加してください。",
+  "searchHint": "英単語・意味で検索",
+  "weakOnlyFilterLabel": "苦手のみ表示",
+  "noMatchingWords": "該当する単語が見つかりませんでした",
+  "noTranslationYet": "訳未入力",
+  "playPronunciationTooltip": "発音を再生",
+  "flashcardFabLabel": "暗記カード",
+  "boxUnsetLabel": "未設定"
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../repositories/activity_repository.dart';
 import '../theme/app_theme.dart';
@@ -25,9 +26,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final logsAsync = ref.watch(activityLogsProvider);
     final streakAsync = ref.watch(streakProvider);
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const AppTitleRow(title: '学習カレンダー')),
+      appBar: AppBar(title: AppTitleRow(title: l10n.calendarTitle)),
       body: logsAsync.when(
         data: (logs) {
           final appOpenDays = <DateTime>{};
@@ -48,7 +50,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   data: (streak) => Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      streak > 0 ? '🔥 $streak日連続で学習中！' : 'まだ連続記録はありません',
+                      streak > 0
+                          ? l10n.calendarStreakActive(streak)
+                          : l10n.calendarStreakNone,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
@@ -122,9 +126,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _legend(colors.primary, 'アプリを開いた日'),
+                    _legend(colors.primary, l10n.calendarLegendAppOpen),
                     const SizedBox(width: 24),
-                    _legend(colors.secondary, '暗記カードをやった日'),
+                    _legend(colors.secondary, l10n.calendarLegendFlashcard),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -144,7 +148,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('エラー: $error')),
+        error: (error, stack) =>
+            Center(child: Text(l10n.errorWithMessage(error.toString()))),
       ),
     );
   }
