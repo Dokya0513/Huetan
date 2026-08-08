@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../models/part_of_speech.dart';
 import '../providers/providers.dart';
 import '../services/dictionary_service.dart';
@@ -49,11 +50,12 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
   }
 
   Future<void> _lookupDictionary() async {
+    final l10n = AppLocalizations.of(context)!;
     final word = _englishController.text.trim();
     if (word.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('先に英単語を入力してください')));
+      ).showSnackBar(SnackBar(content: Text(l10n.enterEnglishFirst)));
       return;
     }
 
@@ -65,7 +67,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     if (result == null || result.senses.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('辞書から情報を取得できませんでした')));
+      ).showSnackBar(SnackBar(content: Text(l10n.dictionaryLookupFailed)));
       return;
     }
 
@@ -89,17 +91,18 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
   }
 
   Future<void> _pickSense(List<DictionarySense> senses) async {
+    final l10n = AppLocalizations.of(context)!;
     final chosen = await showModalBottomSheet<DictionarySense>(
       context: context,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
-                'この単語には複数の品詞があります。どちらの意味で登録しますか？',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                l10n.multipleSensesPrompt,
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
             ...senses.map(
@@ -126,6 +129,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
 
     final repository = ref.read(wordRepositoryProvider);
     final existing = widget.existing;
@@ -145,14 +149,18 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('既に登録されています'),
+          title: Text(l10n.alreadyRegisteredTitle),
           content: Text(
-            '「$english」（${partOfSpeech ?? "品詞未設定"}・${japanese ?? "意味未設定"}）は既に登録済みです。',
+            l10n.alreadyRegisteredContent(
+              english,
+              partOfSpeech ?? l10n.posUnset,
+              japanese ?? l10n.translationUnset,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              child: Text(l10n.ok),
             ),
           ],
         ),
@@ -185,20 +193,21 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
   Future<void> _delete() async {
     final existing = widget.existing;
     if (existing == null) return;
+    final l10n = AppLocalizations.of(context)!;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('削除確認'),
-        content: Text('「${existing.english}」を削除しますか？'),
+        title: Text(l10n.deleteConfirmTitle),
+        content: Text(l10n.deleteConfirmContent(existing.english)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('削除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -218,10 +227,11 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.existing != null;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? '単語を編集' : '単語を追加'),
+        title: Text(isEditing ? l10n.editWordTitle : l10n.addWordTitle),
         actions: [
           if (isEditing)
             IconButton(
@@ -241,9 +251,13 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _englishController,
-                    decoration: const InputDecoration(labelText: '英単語 / フレーズ'),
+                    decoration: InputDecoration(
+                      labelText: l10n.englishFieldLabel,
+                    ),
                     validator: (value) =>
-                        (value == null || value.trim().isEmpty) ? '必須です' : null,
+                        (value == null || value.trim().isEmpty)
+                        ? l10n.requiredField
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -260,7 +274,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
                         )
                       : IconButton.filledTonal(
                           onPressed: _lookupDictionary,
-                          tooltip: '辞書から自動取得（品詞・例文・発音）',
+                          tooltip: l10n.dictionaryLookupTooltip,
                           icon: const Icon(Icons.auto_fix_high),
                         ),
                 ),
@@ -279,7 +293,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
                             volume: ref.read(voiceVolumeProvider),
                           );
                     },
-                    tooltip: '発音を再生',
+                    tooltip: l10n.playPronunciationTooltip,
                     icon: const Icon(Icons.volume_up_outlined),
                   ),
                 ),
@@ -288,20 +302,18 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _japaneseController,
-              decoration: const InputDecoration(
-                labelText: '意味（日本語・後から入力してもOK）',
-              ),
+              decoration: InputDecoration(labelText: l10n.japaneseFieldLabel),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _exampleController,
-              decoration: const InputDecoration(labelText: '出てきた例文（任意）'),
+              decoration: InputDecoration(labelText: l10n.exampleFieldLabel),
               maxLines: 3,
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<PartOfSpeech>(
               initialValue: _selectedPos,
-              decoration: const InputDecoration(labelText: '品詞（任意）'),
+              decoration: InputDecoration(labelText: l10n.posFieldLabel),
               items: PartOfSpeech.values
                   .map(
                     (pos) =>
@@ -311,7 +323,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
               onChanged: (pos) => setState(() => _selectedPos = pos),
             ),
             const SizedBox(height: 24),
-            FilledButton(onPressed: _save, child: const Text('保存')),
+            FilledButton(onPressed: _save, child: Text(l10n.save)),
           ],
         ),
       ),

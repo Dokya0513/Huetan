@@ -84,5 +84,67 @@
   "noTranslationYet": "訳未入力",
   "playPronunciationTooltip": "発音を再生",
   "flashcardFabLabel": "暗記カード",
-  "boxUnsetLabel": "未設定"
+  "boxUnsetLabel": "未設定",
+
+  "cancel": "キャンセル",
+  "ok": "OK",
+  "delete": "削除",
+  "save": "保存",
+
+  "settingsTitle": "設定",
+  "settingsThemeSectionHeader": "テーマ",
+  "settingsDarkModeLabel": "ダークモード",
+  "settingsVolumeSectionHeader": "音量",
+  "settingsSoundEffectLabel": "効果音",
+  "settingsSoundEffectDescription": "正解時に鳴るチャイム音",
+  "settingsVoiceLabel": "読み上げ音声",
+  "settingsVoiceDescription": "単語の発音再生・読み上げ（TTS）の音量",
+  "settingsDataSectionHeader": "データ",
+  "settingsDataDescription": "単語・復習履歴・アクティビティ履歴をまとめてバックアップ／復元できます",
+  "settingsExportButton": "エクスポート",
+  "settingsImportButton": "インポート",
+  "settingsCreditsSectionHeader": "クレジット",
+  "settingsCreditsCefrText": "『CEFR-J Wordlist Version 1.6』\n東京外国語大学投野由紀夫研究室\n(http://www.cefr-j.org/download.html より2026年8月ダウンロード)\n単語のCEFRレベル判定に使用",
+
+  "exportSaveDialogTitle": "バックアップの保存先を選択",
+  "exportedSnackbar": "エクスポートしました: {path}",
+  "@exportedSnackbar": {
+    "placeholders": { "path": { "type": "String" } }
+  },
+  "importSelectDialogTitle": "バックアップファイルを選択",
+  "importConfirmTitle": "インポートの確認",
+  "importConfirmContent": "今のデータ（単語・復習履歴・アクティビティ履歴）はすべて削除され、選択したファイルの内容に置き換わります。よろしいですか？",
+  "importSuccessSnackbar": "インポートが完了しました",
+  "importFailureSnackbar": "インポートに失敗しました: {error}",
+  "@importFailureSnackbar": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "enterEnglishFirst": "先に英単語を入力してください",
+  "dictionaryLookupFailed": "辞書から情報を取得できませんでした",
+  "multipleSensesPrompt": "この単語には複数の品詞があります。どちらの意味で登録しますか？",
+  "alreadyRegisteredTitle": "既に登録されています",
+  "alreadyRegisteredContent": "「{english}」（{pos}・{japanese}）は既に登録済みです。",
+  "@alreadyRegisteredContent": {
+    "placeholders": {
+      "english": { "type": "String" },
+      "pos": { "type": "String" },
+      "japanese": { "type": "String" }
+    }
+  },
+  "posUnset": "品詞未設定",
+  "translationUnset": "意味未設定",
+  "deleteConfirmTitle": "削除確認",
+  "deleteConfirmContent": "「{english}」を削除しますか？",
+  "@deleteConfirmContent": {
+    "placeholders": { "english": { "type": "String" } }
+  },
+  "editWordTitle": "単語を編集",
+  "addWordTitle": "単語を追加",
+  "englishFieldLabel": "英単語 / フレーズ",
+  "requiredField": "必須です",
+  "dictionaryLookupTooltip": "辞書から自動取得（品詞・例文・発音）",
+  "japaneseFieldLabel": "意味（日本語・後から入力してもOK）",
+  "exampleFieldLabel": "出てきた例文（任意）",
+  "posFieldLabel": "品詞（任意）"
 }

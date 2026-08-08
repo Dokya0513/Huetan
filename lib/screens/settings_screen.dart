@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 
@@ -10,13 +11,14 @@ class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   Future<void> _exportData(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final db = ref.read(databaseProvider);
     final backupService = ref.read(backupServiceProvider);
     final data = await backupService.buildExport(db);
 
     final today = DateTime.now().toIso8601String().split('T').first;
     final path = await FilePicker.platform.saveFile(
-      dialogTitle: 'バックアップの保存先を選択',
+      dialogTitle: l10n.exportSaveDialogTitle,
       fileName: 'fuetan_backup_$today.json',
       type: FileType.custom,
       allowedExtensions: ['json'],
@@ -27,13 +29,14 @@ class SettingsScreen extends ConsumerWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('エクスポートしました: $path')));
+      ).showSnackBar(SnackBar(content: Text(l10n.exportedSnackbar(path))));
     }
   }
 
   Future<void> _importData(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
-      dialogTitle: 'バックアップファイルを選択',
+      dialogTitle: l10n.importSelectDialogTitle,
       type: FileType.custom,
       allowedExtensions: ['json'],
     );
@@ -44,18 +47,16 @@ class SettingsScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('インポートの確認'),
-        content: const Text(
-          '今のデータ（単語・復習履歴・アクティビティ履歴）はすべて削除され、選択したファイルの内容に置き換わります。よろしいですか？',
-        ),
+        title: Text(l10n.importConfirmTitle),
+        content: Text(l10n.importConfirmContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('インポート'),
+            child: Text(l10n.settingsImportButton),
           ),
         ],
       ),
@@ -70,13 +71,13 @@ class SettingsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('インポートが完了しました')));
+        ).showSnackBar(SnackBar(content: Text(l10n.importSuccessSnackbar)));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('インポートに失敗しました: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.importFailureSnackbar(e.toString()))),
+        );
       }
     }
   }
@@ -87,18 +88,19 @@ class SettingsScreen extends ConsumerWidget {
     final voiceVolume = ref.watch(voiceVolumeProvider);
     final themeMode = ref.watch(themeModeProvider);
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('設定')),
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _SectionHeader('テーマ'),
+          _SectionHeader(l10n.settingsThemeSectionHeader),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text(
-              'ダークモード',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            title: Text(
+              l10n.settingsDarkModeLabel,
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             value: themeMode == ThemeMode.dark,
             onChanged: (value) {
@@ -108,10 +110,16 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           const Divider(),
           const SizedBox(height: 8),
-          _SectionHeader('音量'),
-          const Text('効果音', style: TextStyle(fontWeight: FontWeight.w700)),
+          _SectionHeader(l10n.settingsVolumeSectionHeader),
+          Text(
+            l10n.settingsSoundEffectLabel,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 4),
-          Text('正解時に鳴るチャイム音', style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            l10n.settingsSoundEffectDescription,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           Row(
             children: [
               const Icon(Icons.volume_down_outlined),
@@ -127,10 +135,13 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const Text('読み上げ音声', style: TextStyle(fontWeight: FontWeight.w700)),
+          Text(
+            l10n.settingsVoiceLabel,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 4),
           Text(
-            '単語の発音再生・読み上げ（TTS）の音量',
+            l10n.settingsVoiceDescription,
             style: Theme.of(context).textTheme.bodySmall,
           ),
           Row(
@@ -150,9 +161,9 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           const Divider(),
           const SizedBox(height: 8),
-          _SectionHeader('データ'),
+          _SectionHeader(l10n.settingsDataSectionHeader),
           Text(
-            '単語・復習履歴・アクティビティ履歴をまとめてバックアップ／復元できます',
+            l10n.settingsDataDescription,
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 8),
@@ -162,7 +173,7 @@ class SettingsScreen extends ConsumerWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => _exportData(context, ref),
                   icon: const Icon(Icons.upload_outlined),
-                  label: const Text('エクスポート'),
+                  label: Text(l10n.settingsExportButton),
                 ),
               ),
               const SizedBox(width: 8),
@@ -170,7 +181,7 @@ class SettingsScreen extends ConsumerWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => _importData(context, ref),
                   icon: const Icon(Icons.download_outlined),
-                  label: const Text('インポート'),
+                  label: Text(l10n.settingsImportButton),
                 ),
               ),
             ],
@@ -178,12 +189,9 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           const Divider(),
           const SizedBox(height: 8),
-          _SectionHeader('クレジット'),
+          _SectionHeader(l10n.settingsCreditsSectionHeader),
           Text(
-            '『CEFR-J Wordlist Version 1.6』\n'
-            '東京外国語大学投野由紀夫研究室\n'
-            '(http://www.cefr-j.org/download.html より2026年8月ダウンロード)\n'
-            '単語のCEFRレベル判定に使用',
+            l10n.settingsCreditsCefrText,
             style: TextStyle(
               fontSize: 11,
               color: colors.textSecondary,
