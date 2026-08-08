@@ -15,6 +15,7 @@ enum VolumeChannel {
 /// separately so the user can balance them independently.
 class SettingsService {
   static const _darkModeKey = 'dark_mode';
+  static const _onboardingSeenKey = 'onboarding_seen';
 
   Future<double> loadVolume(VolumeChannel channel) async {
     final prefs = await SharedPreferences.getInstance();
@@ -34,5 +35,15 @@ class SettingsService {
   Future<void> saveDarkMode(bool isDark) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_darkModeKey, isDark);
+  }
+
+  Future<bool> loadOnboardingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_onboardingSeenKey) ?? false;
+  }
+
+  Future<void> saveOnboardingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_onboardingSeenKey, true);
   }
 }

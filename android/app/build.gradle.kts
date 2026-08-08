@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.dokya.english_learning"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

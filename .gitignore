@@ -31,10 +31,12 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/android/build/
 /coverage/
 
-# Release build zips (attached to GitHub Releases instead of committed)
+# Release build zips/APKs (attached to GitHub Releases instead of committed)
 *.zip
+*.apk
 
 # Symbolication related
 app.*.symbols
