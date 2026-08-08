@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../models/cefr_level.dart';
 import '../models/fill_blank.dart';
 import '../models/part_of_speech.dart';
@@ -19,13 +20,14 @@ const List<int?> _countOptions = [null, 100, 50, 30];
 /// real quiz rather than a "tap the only button" no-op.
 const _minWordsForChoiceModes = 4;
 
-enum QuizMode {
-  flashcard('暗記カード'),
-  choiceQuiz('4択クイズ'),
-  fillBlank('穴埋めクイズ（4択）');
+enum QuizMode { flashcard, choiceQuiz, fillBlank }
 
-  final String label;
-  const QuizMode(this.label);
+extension QuizModeLabel on QuizMode {
+  String label(AppLocalizations l10n) => switch (this) {
+    QuizMode.flashcard => l10n.quizModeFlashcard,
+    QuizMode.choiceQuiz => l10n.quizModeChoice,
+    QuizMode.fillBlank => l10n.quizModeFillBlank,
+  };
 }
 
 class FlashcardSetupScreen extends ConsumerStatefulWidget {
@@ -37,12 +39,13 @@ class FlashcardSetupScreen extends ConsumerStatefulWidget {
 
   /// AppBar title — customizable so the same screen can read "暗記カード設定"
   /// when pushed, or a tab-appropriate title when embedded as a tab root.
-  final String title;
+  /// Null falls back to [AppLocalizations.setupDefaultTitle].
+  final String? title;
 
   const FlashcardSetupScreen({
     super.key,
     this.allowedModes = QuizMode.values,
-    this.title = '暗記カード設定',
+    this.title,
   });
 
   @override
@@ -86,12 +89,13 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
   }
 
   Future<void> _start({bool dueOnly = false}) async {
+    final l10n = AppLocalizations.of(context)!;
     final needsDirection =
         _mode == QuizMode.flashcard || _mode == QuizMode.choiceQuiz;
     if (needsDirection && !_enToJa && !_jaToEn) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('出題方向を1つ以上選んでください')));
+      ).showSnackBar(SnackBar(content: Text(l10n.directionRequiredError)));
       return;
     }
 
@@ -108,7 +112,7 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('条件に合う単語が見つかりませんでした')));
+        ).showSnackBar(SnackBar(content: Text(l10n.noMatchingWordsError)));
       }
       return;
     }
@@ -182,9 +186,12 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
     final canStart = needsChoices
         ? matchingCount >= _minWordsForChoiceModes
         : matchingCount > 0;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: AppTitleRow(title: widget.title)),
+      appBar: AppBar(
+        title: AppTitleRow(title: widget.title ?? l10n.setupDefaultTitle),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -201,34 +208,37 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          '今日の復習: $dueCount件',
+                          l10n.dueTodayCount(dueCount),
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
                       FilledButton(
                         onPressed: () => _start(dueOnly: true),
-                        child: const Text('今日の分をやる'),
+                        child: Text(l10n.doTodayButton),
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'または、条件を選んで自由にやる',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                l10n.orFreeChoice,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
             ],
             if (widget.allowedModes.length > 1) ...[
-              const Text('出題形式', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.quizFormatLabel,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 children: [
                   for (final mode in widget.allowedModes)
                     _choiceChip(
-                      label: mode.label,
+                      label: mode.label(l10n),
                       selected: _mode == mode,
                       onSelected: () => setState(() => _mode = mode),
                     ),
@@ -237,18 +247,21 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
               if (_mode == QuizMode.fillBlank) ...[
                 const SizedBox(height: 4),
                 Text(
-                  '例文に単語がそのままの形で含まれている単語だけが出題対象です',
+                  l10n.fillBlankHint,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
               const SizedBox(height: 24),
             ],
-            const Text('出題数', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              l10n.countLabel,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: _countOptions.map((count) {
-                final label = count == null ? 'すべて' : '$count';
+                final label = count == null ? l10n.countAll : '$count';
                 return _choiceChip(
                   label: label,
                   selected: _selectedCount == count,
@@ -257,38 +270,38 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
               }).toList(),
             ),
             const SizedBox(height: 24),
-            const Text(
-              '品詞で絞り込み',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              l10n.posFilterLabel,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: [
                 _choiceChip(
-                  label: '絞り込みなし',
+                  label: l10n.noFilter,
                   selected: _posFilter == null,
                   onSelected: () => setState(() => _posFilter = null),
                 ),
                 for (final pos in PartOfSpeech.values)
                   _choiceChip(
-                    label: pos.label,
+                    label: pos.displayLabel(l10n),
                     selected: _posFilter == pos,
                     onSelected: () => setState(() => _posFilter = pos),
                   ),
               ],
             ),
             const SizedBox(height: 24),
-            const Text(
-              'CEFRレベルで絞り込み',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              l10n.cefrFilterLabel,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: [
                 _choiceChip(
-                  label: '絞り込みなし',
+                  label: l10n.noFilter,
                   selected: _cefrFilter == null,
                   onSelected: () => setState(() => _cefrFilter = null),
                 ),
@@ -320,8 +333,11 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
                     Expanded(
                       child: Text(
                         matchingCount == 0
-                            ? 'この条件に合う単語がまだありません。まずは単語を追加してみよう'
-                            : 'あと${_minWordsForChoiceModes - matchingCount}語追加すると遊べるようになります（現在$matchingCount語）',
+                            ? l10n.lockedNoWords
+                            : l10n.lockedNeedMore(
+                                _minWordsForChoiceModes - matchingCount,
+                                matchingCount,
+                              ),
                         style: TextStyle(
                           fontSize: 12,
                           color: context.colors.textSecondary,
@@ -333,19 +349,22 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
               )
             else
               Text(
-                '条件に合う単語数: $matchingCount件',
+                l10n.matchingWordsCount(matchingCount),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             if (showDirectionPicker) ...[
               const SizedBox(height: 24),
-              const Text('出題方向', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.directionLabel,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               CheckboxListTile(
-                title: const Text('英語 → 日本語'),
+                title: Text(l10n.directionEnToJa),
                 value: _enToJa,
                 onChanged: (value) => setState(() => _enToJa = value ?? false),
               ),
               CheckboxListTile(
-                title: const Text('日本語 → 英語'),
+                title: Text(l10n.directionJaToEn),
                 value: _jaToEn,
                 onChanged: (value) => setState(() => _jaToEn = value ?? false),
               ),
@@ -355,7 +374,7 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: canStart ? _start : null,
-                child: const Text('開始'),
+                child: Text(l10n.startButton),
               ),
             ),
           ],

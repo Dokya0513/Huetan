@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../repositories/activity_repository.dart' show dateOnly;
 import '../theme/app_theme.dart';
@@ -26,6 +28,8 @@ class DailyActivityChart extends ConsumerWidget {
       (max, c) => [max, c.added, c.reviewed].reduce((a, b) => a > b ? a : b),
     );
     final today = dateOnly(DateTime.now());
+    final l10n = AppLocalizations.of(context)!;
+    final weekdayFormat = DateFormat.E(Localizations.localeOf(context).toString());
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -38,7 +42,7 @@ class DailyActivityChart extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '直近7日間の取り組み',
+            l10n.last7DaysActivityTitle,
             style: TextStyle(
               fontWeight: FontWeight.w700,
               color: colors.textPrimary,
@@ -79,15 +83,7 @@ class DailyActivityChart extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: counts.map((c) {
                     final isToday = c.day == today;
-                    final weekdayLabel = const [
-                      '月',
-                      '火',
-                      '水',
-                      '木',
-                      '金',
-                      '土',
-                      '日',
-                    ][c.day.weekday - 1];
+                    final weekdayLabel = weekdayFormat.format(c.day);
                     return Column(
                       children: [
                         Text(
@@ -125,9 +121,9 @@ class DailyActivityChart extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _legend(colors.primary, '追加した単語', colors),
+              _legend(colors.primary, l10n.wordsAddedLegend, colors),
               const SizedBox(width: 16),
-              _legend(colors.secondary, '取り組んだ単語', colors),
+              _legend(colors.secondary, l10n.wordsReviewedLegend, colors),
             ],
           ),
         ],

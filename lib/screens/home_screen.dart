@@ -295,6 +295,7 @@ class _PosPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -302,7 +303,7 @@ class _PosPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        pos.label,
+        pos.displayLabel(l10n),
         style: const TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
@@ -364,7 +365,7 @@ class _BoxBadge extends StatelessWidget {
       color = colors.primary;
       backgroundColor = colors.primary.withValues(alpha: 0.15);
     } else {
-      final condition = WordCondition.forBox(box, colors);
+      final condition = WordCondition.forBox(box, colors, l10n);
       label = condition.label;
       color = condition.color;
       backgroundColor = condition.backgroundColor;

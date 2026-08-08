@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../repositories/activity_repository.dart';
 import '../repositories/word_repository.dart';
@@ -156,6 +157,7 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
         : card.word.english;
     final frontIsEnglish = card.direction == ReviewDirection.enToJa;
     final backIsEnglish = !frontIsEnglish;
+    final l10n = AppLocalizations.of(context)!;
     final baseWordStyle = Theme.of(context).textTheme.headlineMedium;
     TextStyle? wordStyle(bool isEnglish) => baseWordStyle?.copyWith(
       fontFamily: isEnglish ? englishDisplayFontFamily : 'Zen Maru Gothic',
@@ -201,7 +203,7 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
                                     ),
                                     IconButton(
                                       onPressed: speak,
-                                      tooltip: '発音を再生',
+                                      tooltip: l10n.playPronunciationTooltip,
                                       icon: const Icon(
                                         Icons.volume_up_outlined,
                                       ),
@@ -232,7 +234,7 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
                                 ),
                                 IconButton(
                                   onPressed: speak,
-                                  tooltip: '発音を再生',
+                                  tooltip: l10n.playPronunciationTooltip,
                                   icon: const Icon(Icons.volume_up_outlined),
                                 ),
                               ],
@@ -244,21 +246,21 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
             ),
             const SizedBox(height: 24),
             if (!_flipped)
-              const Text('カードをタップして答えを表示')
+              Text(l10n.tapToReveal)
             else
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => _answer(false),
-                      child: const Text('わからなかった'),
+                      child: Text(l10n.dontKnowButton),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: FilledButton(
                       onPressed: () => _answer(true),
-                      child: const Text('わかった'),
+                      child: Text(l10n.knowButton),
                     ),
                   ),
                 ],

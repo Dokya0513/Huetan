@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../screens/home_screen.dart';
 import '../theme/app_theme.dart';
@@ -18,6 +19,7 @@ class WeakWordsPreviewCard extends ConsumerWidget {
     final colors = context.colors;
 
     if (words.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
 
     final preview = words.take(_previewCount).toList();
 
@@ -35,7 +37,7 @@ class WeakWordsPreviewCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  '苦手単語',
+                  l10n.weakWordsTitle,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: colors.textPrimary,
@@ -50,7 +52,7 @@ class WeakWordsPreviewCard extends ConsumerWidget {
                     ),
                   );
                 },
-                child: const Text('すべて見る'),
+                child: Text(l10n.viewAllButton),
               ),
             ],
           ),
@@ -66,6 +68,7 @@ class WeakWordsPreviewCard extends ConsumerWidget {
                       color: WordCondition.forBox(
                         word.leitnerBox,
                         colors,
+                        l10n,
                       ).color,
                       shape: BoxShape.circle,
                     ),

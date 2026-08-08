@@ -146,5 +146,178 @@
   "dictionaryLookupTooltip": "辞書から自動取得（品詞・例文・発音）",
   "japaneseFieldLabel": "意味（日本語・後から入力してもOK）",
   "exampleFieldLabel": "出てきた例文（任意）",
-  "posFieldLabel": "品詞（任意）"
+  "posFieldLabel": "品詞（任意）",
+
+  "quizModeFlashcard": "暗記カード",
+  "quizModeChoice": "4択クイズ",
+  "quizModeFillBlank": "穴埋めクイズ（4択）",
+  "setupDefaultTitle": "暗記カード設定",
+  "directionRequiredError": "出題方向を1つ以上選んでください",
+  "noMatchingWordsError": "条件に合う単語が見つかりませんでした",
+  "dueTodayCount": "今日の復習: {count}件",
+  "@dueTodayCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "doTodayButton": "今日の分をやる",
+  "orFreeChoice": "または、条件を選んで自由にやる",
+  "quizFormatLabel": "出題形式",
+  "fillBlankHint": "例文に単語がそのままの形で含まれている単語だけが出題対象です",
+  "countLabel": "出題数",
+  "countAll": "すべて",
+  "posFilterLabel": "品詞で絞り込み",
+  "noFilter": "絞り込みなし",
+  "cefrFilterLabel": "CEFRレベルで絞り込み",
+  "lockedNoWords": "この条件に合う単語がまだありません。まずは単語を追加してみよう",
+  "lockedNeedMore": "あと{needed}語追加すると遊べるようになります（現在{current}語）",
+  "@lockedNeedMore": {
+    "placeholders": {
+      "needed": { "type": "int" },
+      "current": { "type": "int" }
+    }
+  },
+  "matchingWordsCount": "条件に合う単語数: {count}件",
+  "@matchingWordsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "directionLabel": "出題方向",
+  "directionEnToJa": "英語 → 日本語",
+  "directionJaToEn": "日本語 → 英語",
+  "startButton": "開始",
+
+  "tapToReveal": "カードをタップして答えを表示",
+  "dontKnowButton": "わからなかった",
+  "knowButton": "わかった",
+  "viewResultButton": "結果を見る",
+
+  "last7DaysStripTitle": "直近7日間",
+  "streakDaysShort": "🔥 {days}日連続",
+  "@streakDaysShort": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "studiedDayLegend": "学習した日",
+  "notStudiedLegend": "未学習",
+  "todayLegend": "今日",
+
+  "dueTodayDoneMessage": "今日の復習は完了！🎉",
+  "doNowButton": "今すぐやる",
+
+  "recentBadgesTitle": "最近解錠したバッジ",
+  "viewAllButton": "すべて見る",
+
+  "weakWordsTitle": "苦手単語",
+
+  "posDistributionTitle": "品詞内訳（全{total}語）",
+  "@posDistributionTitle": {
+    "placeholders": { "total": { "type": "int" } }
+  },
+  "wordCountPercent": "{count}語（{percent}%）",
+  "@wordCountPercent": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "percent": { "type": "int" }
+    }
+  },
+  "cefrDistributionTitle": "CEFRレベル内訳（全{total}語）",
+  "@cefrDistributionTitle": {
+    "placeholders": { "total": { "type": "int" } }
+  },
+
+  "last7DaysActivityTitle": "直近7日間の取り組み",
+  "wordsAddedLegend": "追加した単語",
+  "wordsReviewedLegend": "取り組んだ単語",
+
+  "posNoun": "名詞",
+  "posVerb": "動詞",
+  "posAdjective": "形容詞",
+  "posAdverb": "副詞",
+  "posPhrase": "フレーズ",
+  "posOther": "その他",
+
+  "wordConditionWeak": "苦手",
+  "wordConditionAlert": "要注意",
+  "wordConditionCaution": "注意",
+  "wordConditionPerfect": "完璧",
+
+  "cefrOutOfScopeLabel": "対象外",
+
+  "adviceNoWords1": "まずは単語を登録してみよう！",
+  "adviceNoWords2": "ホームの入力欄からサクッと単語を追加できるよ",
+  "adviceStreakUrgent1": "今日中に復習しないとストリークが途切れちゃうよ！急いで！",
+  "adviceStreakUrgent2": "まだ間に合う…！今日の分だけでもやっておこう",
+  "adviceNotDoneYet1": "今日はまだ復習してないね。時間があるときにやってみよう！",
+  "adviceNotDoneYet2": "今日の分、いつやる？空き時間にサクッとどう？",
+  "adviceManyWeak1": "苦手な単語が{count}個たまってるよ、一緒に復習しよう！",
+  "@adviceManyWeak1": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "adviceManyWeak2": "苦手リスト、ちょっと賑わってきたね。整理していこう",
+  "adviceDueRemaining1": "今日の復習が{count}件残ってるよ、頑張ろう！",
+  "@adviceDueRemaining1": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "adviceDueRemaining2": "あと{count}件！サクッと終わらせちゃおう",
+  "@adviceDueRemaining2": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "adviceStreak7Home1": "🔥{streak}日連続！その調子だよ！",
+  "@adviceStreak7Home1": {
+    "placeholders": { "streak": { "type": "int" } }
+  },
+  "adviceStreak7Home2": "ここまで{streak}日、継続力すごいよ！",
+  "@adviceStreak7Home2": {
+    "placeholders": { "streak": { "type": "int" } }
+  },
+  "adviceMorning1": "☀️ 朝から偉い！その調子で一日を始めよう",
+  "adviceMorning2": "おはよう！今日も一問からいこう",
+  "adviceDay1": "今日もコツコツ偉い！",
+  "adviceDay2": "いい調子！このまま続けよう",
+  "adviceEvening1": "🌆 夕方も継続中、ナイスペース！",
+  "adviceEvening2": "一日お疲れさま、もうひと踏ん張りどう？",
+  "adviceNight1": "🌙 遅くまでお疲れさま、無理しすぎないでね",
+  "adviceNight2": "今日も一日ありがとう、ゆっくり休んでね",
+  "adviceWeakPos1": "「{pos}」でよく間違えてるみたい。重点的に復習してみる?",
+  "@adviceWeakPos1": {
+    "placeholders": { "pos": { "type": "String" } }
+  },
+  "adviceWeakPos2": "「{pos}」、ちょっと苦手そうだね。一緒に見直そう",
+  "@adviceWeakPos2": {
+    "placeholders": { "pos": { "type": "String" } }
+  },
+  "adviceDominantSparse1": "「{dominant}」ばかり登録してるね。たまには「{sparse}」も増やしてみる?",
+  "@adviceDominantSparse1": {
+    "placeholders": {
+      "dominant": { "type": "String" },
+      "sparse": { "type": "String" }
+    }
+  },
+  "adviceDominantSparse2": "品詞が「{dominant}」に偏ってきてるかも",
+  "@adviceDominantSparse2": {
+    "placeholders": { "dominant": { "type": "String" } }
+  },
+  "adviceBalanced1": "品詞のバランスがいいね！色んな単語を覚えられてる",
+  "adviceBalanced2": "偏りなく単語を登録できてる、いい調子！",
+  "adviceCalNoData1": "まずは今日、1日分の記録を作ってみよう！",
+  "adviceCalNoData2": "カレンダーに色がつくと楽しいよ、やってみよう",
+  "adviceCalStreak7_1": "🔥{streak}日連続！このペース最高だよ！",
+  "@adviceCalStreak7_1": {
+    "placeholders": { "streak": { "type": "int" } }
+  },
+  "adviceCalStreak7_2": "{streak}日も続けられてる、本当にすごいね！",
+  "@adviceCalStreak7_2": {
+    "placeholders": { "streak": { "type": "int" } }
+  },
+  "adviceCalStreak2_1": "{streak}日連続で順調だね！このまま続けよう",
+  "@adviceCalStreak2_1": {
+    "placeholders": { "streak": { "type": "int" } }
+  },
+  "adviceCalStreak2_2": "いいペース！{streak}日連続キープ中だよ",
+  "@adviceCalStreak2_2": {
+    "placeholders": { "streak": { "type": "int" } }
+  },
+  "adviceCalActive30_1": "連続じゃなくても、この30日でしっかり学べてるね！",
+  "adviceCalActive30_2": "ペースはまばらでも積み重ねはちゃんとできてるよ",
+  "adviceCalActive3_1": "少しずつでも学べてるの、ちゃんと積み重なってるよ！",
+  "adviceCalActive3_2": "その調子！焦らずコツコツいこう",
+  "adviceCalDefault1": "継続は力なり。また今日から積み重ねていこう！",
+  "adviceCalDefault2": "一歩ずつでいいよ、また始めてみよう！"
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
+import '../models/part_of_speech.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import '../theme/pos_colors.dart';
@@ -22,6 +24,7 @@ class GenreDistributionBar extends ConsumerWidget {
 
     final total = distribution.fold<int>(0, (sum, t) => sum + t.count);
     final unsetColor = colors.textSecondary.withValues(alpha: 0.35);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -34,7 +37,7 @@ class GenreDistributionBar extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '品詞内訳（全$total語）',
+            l10n.posDistributionTitle(total),
             style: TextStyle(
               fontWeight: FontWeight.w700,
               color: colors.textPrimary,
@@ -77,7 +80,7 @@ class GenreDistributionBar extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          item.pos?.label ?? unsetPosLabel,
+                          item.pos?.displayLabel(l10n) ?? l10n.boxUnsetLabel,
                           style: TextStyle(
                             fontSize: 12,
                             color: item.pos == null
@@ -87,7 +90,10 @@ class GenreDistributionBar extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        '${item.count}語（${(item.count / total * 100).round()}%）',
+                        l10n.wordCountPercent(
+                          item.count,
+                          (item.count / total * 100).round(),
+                        ),
                         style: TextStyle(
                           fontSize: 12,
                           color: colors.textSecondary,

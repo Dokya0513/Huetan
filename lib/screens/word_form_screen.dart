@@ -107,7 +107,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
             ),
             ...senses.map(
               (sense) => ListTile(
-                title: Text(sense.partOfSpeech.label),
+                title: Text(sense.partOfSpeech.displayLabel(l10n)),
                 subtitle: sense.example != null ? Text(sense.example!) : null,
                 onTap: () => Navigator.of(context).pop(sense),
               ),
@@ -153,7 +153,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
           content: Text(
             l10n.alreadyRegisteredContent(
               english,
-              partOfSpeech ?? l10n.posUnset,
+              _selectedPos?.displayLabel(l10n) ?? l10n.posUnset,
               japanese ?? l10n.translationUnset,
             ),
           ),

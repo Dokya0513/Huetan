@@ -11,8 +11,6 @@ const Map<CefrLevel, Color> cefrColors = {
   CefrLevel.b2: Color(0xFFDB2777),
 };
 
-const cefrOutOfScopeLabel = '対象外';
-
 Color colorForCefr(CefrLevel? level, Color outOfScopeColor) {
   if (level == null) return outOfScopeColor;
   return cefrColors[level] ?? outOfScopeColor;

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../repositories/activity_repository.dart';
 import '../theme/app_theme.dart';
@@ -10,13 +12,13 @@ import '../theme/app_theme.dart';
 class WeeklyActivityStrip extends ConsumerWidget {
   const WeeklyActivityStrip({super.key});
 
-  static const _weekdayLabels = ['月', '火', '水', '木', '金', '土', '日'];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final logs = ref.watch(activityLogsProvider).value ?? [];
     final streak = ref.watch(streakProvider).value ?? 0;
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    final weekdayFormat = DateFormat.E(Localizations.localeOf(context).toString());
 
     final flashcardDays = logs
         .where((l) => l.activityType == ActivityType.flashcard.value)
@@ -40,7 +42,7 @@ class WeeklyActivityStrip extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  '直近7日間',
+                  l10n.last7DaysStripTitle,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: colors.textPrimary,
@@ -49,7 +51,7 @@ class WeeklyActivityStrip extends ConsumerWidget {
               ),
               if (streak > 0)
                 Text(
-                  '🔥 $streak日連続',
+                  l10n.streakDaysShort(streak),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: colors.secondary,
@@ -80,7 +82,7 @@ class WeeklyActivityStrip extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _weekdayLabels[day.weekday - 1],
+                    weekdayFormat.format(day),
                     style: TextStyle(fontSize: 11, color: colors.textSecondary),
                   ),
                 ],
@@ -100,7 +102,7 @@ class WeeklyActivityStrip extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
-                label: '学習した日',
+                label: l10n.studiedDayLegend,
                 colors: colors,
               ),
               const SizedBox(width: 16),
@@ -113,7 +115,7 @@ class WeeklyActivityStrip extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
-                label: '未学習',
+                label: l10n.notStudiedLegend,
                 colors: colors,
               ),
               const SizedBox(width: 16),
@@ -126,7 +128,7 @@ class WeeklyActivityStrip extends ConsumerWidget {
                     border: Border.all(color: colors.secondary, width: 2),
                   ),
                 ),
-                label: '今日',
+                label: l10n.todayLegend,
                 colors: colors,
               ),
             ],

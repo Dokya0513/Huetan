@@ -214,16 +214,16 @@ final genreInsightProvider = Provider<GenreInsight>((ref) {
   final words = ref.watch(allWordsProvider).value ?? [];
   final posCounts = ref.watch(posDistributionProvider);
 
-  String? dominantPos;
-  String? sparsePos;
+  PartOfSpeech? dominantPos;
+  PartOfSpeech? sparsePos;
   var balanced = false;
   if (posCounts.length >= _minPosSampleForInsight) {
     final total = posCounts.fold<int>(0, (sum, t) => sum + t.count);
     final max = posCounts.reduce((a, b) => a.count > b.count ? a : b);
     final min = posCounts.reduce((a, b) => a.count < b.count ? a : b);
     if (max.count / total >= 0.5) {
-      dominantPos = max.pos?.label;
-      sparsePos = min.pos?.label;
+      dominantPos = max.pos;
+      sparsePos = min.pos;
     } else if (max.count - min.count <= 1) {
       balanced = true;
     }
@@ -239,14 +239,14 @@ final genreInsightProvider = Provider<GenreInsight>((ref) {
       posWeakCounts[pos] = (posWeakCounts[pos] ?? 0) + 1;
     }
   }
-  String? weakPos;
+  PartOfSpeech? weakPos;
   var bestWeakRatio = 0.0;
   posTotals.forEach((pos, total) {
     if (total < _minPosSampleForInsight) return;
     final ratio = (posWeakCounts[pos] ?? 0) / total;
     if (ratio >= 0.5 && ratio > bestWeakRatio) {
       bestWeakRatio = ratio;
-      weakPos = pos.label;
+      weakPos = pos;
     }
   });
 

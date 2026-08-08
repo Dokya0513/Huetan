@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../models/fill_blank.dart';
 import '../providers/providers.dart';
 import '../repositories/activity_repository.dart';
@@ -129,6 +130,7 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
   @override
   Widget build(BuildContext context) {
     final question = _questions[_index];
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(title: Text('${_index + 1} / ${_questions.length}')),
@@ -173,7 +175,11 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: _next,
-                  child: Text(_index == _questions.length - 1 ? '結果を見る' : '次へ'),
+                  child: Text(
+                    _index == _questions.length - 1
+                        ? l10n.viewResultButton
+                        : l10n.onboardingNext,
+                  ),
                 ),
               ),
           ],

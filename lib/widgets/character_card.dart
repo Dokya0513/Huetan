@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/character_advice.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
@@ -25,6 +26,7 @@ class _CharacterCardState extends ConsumerState<CharacterCard> {
       widget.adviceProvider ?? characterAdviceCandidatesProvider,
     );
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final advice = candidates[_index % candidates.length];
     final canCycle = candidates.length > 1;
 
@@ -46,7 +48,7 @@ class _CharacterCardState extends ConsumerState<CharacterCard> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                advice.message,
+                advice.message(l10n),
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   color: colors.textPrimary,

@@ -14,8 +14,6 @@ const Map<PartOfSpeech, Color> posColors = {
   PartOfSpeech.other: Color(0xFF7F77DD),
 };
 
-const unsetPosLabel = '未設定';
-
 Color colorForPos(PartOfSpeech? pos, Color unsetColor) {
   if (pos == null) return unsetColor;
   return posColors[pos] ?? unsetColor;

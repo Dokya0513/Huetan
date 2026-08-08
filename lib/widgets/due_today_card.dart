@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../repositories/word_repository.dart';
 import '../screens/flashcard_screen.dart';
@@ -39,6 +40,7 @@ class DueTodayCard extends ConsumerWidget {
     if (wordCount == 0 || dueCount == null) return const SizedBox.shrink();
 
     final isDone = dueCount == 0;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -54,7 +56,7 @@ class DueTodayCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isDone ? '今日の復習は完了！🎉' : '今日の復習: $dueCount件',
+            isDone ? l10n.dueTodayDoneMessage : l10n.dueTodayCount(dueCount),
             style: TextStyle(
               fontWeight: FontWeight.w700,
               color: colors.textPrimary,
@@ -66,7 +68,7 @@ class DueTodayCard extends ConsumerWidget {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => _start(context, ref),
-                child: const Text('今すぐやる'),
+                child: Text(l10n.doNowButton),
               ),
             ),
           ],

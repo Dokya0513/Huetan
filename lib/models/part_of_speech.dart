@@ -1,3 +1,5 @@
+import '../l10n/app_localizations.dart';
+
 /// Fixed set of categories the app uses for 品詞, deliberately coarser than
 /// a dictionary's full grammatical tagging — a handful of buckets keeps the
 /// genre breakdown bar / analytics readable, and gives the user a picker
@@ -12,6 +14,28 @@ enum PartOfSpeech {
 
   final String label;
   const PartOfSpeech(this.label);
+}
+
+/// UI-facing localized text, kept separate from [PartOfSpeech.label] which
+/// is persisted into the DB and used for exact-string filter matching — that
+/// value must stay fixed Japanese regardless of the app's locale.
+extension PartOfSpeechDisplay on PartOfSpeech {
+  String displayLabel(AppLocalizations l10n) {
+    switch (this) {
+      case PartOfSpeech.noun:
+        return l10n.posNoun;
+      case PartOfSpeech.verb:
+        return l10n.posVerb;
+      case PartOfSpeech.adjective:
+        return l10n.posAdjective;
+      case PartOfSpeech.adverb:
+        return l10n.posAdverb;
+      case PartOfSpeech.phrase:
+        return l10n.posPhrase;
+      case PartOfSpeech.other:
+        return l10n.posOther;
+    }
+  }
 }
 
 /// Reverse-lookup by the stored label (the DB column just holds this

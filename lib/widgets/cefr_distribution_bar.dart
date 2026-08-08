@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import '../theme/cefr_colors.dart';
@@ -26,6 +27,7 @@ class CefrDistributionBar extends ConsumerWidget {
 
     final total = distribution.fold<int>(0, (sum, t) => sum + t.count);
     final outOfScopeColor = colors.textSecondary.withValues(alpha: 0.35);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -38,7 +40,7 @@ class CefrDistributionBar extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'CEFRレベル内訳（全$total語）',
+            l10n.cefrDistributionTitle(total),
             style: TextStyle(
               fontWeight: FontWeight.w700,
               color: colors.textPrimary,
@@ -81,7 +83,7 @@ class CefrDistributionBar extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          item.level?.label ?? cefrOutOfScopeLabel,
+                          item.level?.label ?? l10n.cefrOutOfScopeLabel,
                           style: TextStyle(
                             fontSize: 12,
                             color: item.level == null
@@ -91,7 +93,10 @@ class CefrDistributionBar extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        '${item.count}語（${(item.count / total * 100).round()}%）',
+                        l10n.wordCountPercent(
+                          item.count,
+                          (item.count / total * 100).round(),
+                        ),
                         style: TextStyle(
                           fontSize: 12,
                           color: colors.textSecondary,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 /// Font used for English word displays only (flashcard word, "Lv.N", "+XP"
 /// popups) — it has no Japanese glyphs, so it must never be applied to
 /// Japanese text or it silently falls back to a mismatched system font.
@@ -121,17 +123,21 @@ class WordCondition {
   final Color backgroundColor;
   const WordCondition(this.label, this.color, this.backgroundColor);
 
-  factory WordCondition.forBox(int box, AppColors colors) {
+  factory WordCondition.forBox(
+    int box,
+    AppColors colors,
+    AppLocalizations l10n,
+  ) {
     if (box <= 1) {
-      return WordCondition('苦手', colors.danger, colors.dangerBg);
+      return WordCondition(l10n.wordConditionWeak, colors.danger, colors.dangerBg);
     }
     if (box == 2) {
-      return WordCondition('要注意', colors.warning, colors.warningBg);
+      return WordCondition(l10n.wordConditionAlert, colors.warning, colors.warningBg);
     }
     if (box == 3) {
-      return WordCondition('注意', colors.caution, colors.cautionBg);
+      return WordCondition(l10n.wordConditionCaution, colors.caution, colors.cautionBg);
     }
-    return WordCondition('完璧', colors.success, colors.successBg);
+    return WordCondition(l10n.wordConditionPerfect, colors.success, colors.successBg);
   }
 }
 

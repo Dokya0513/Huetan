@@ -1,3 +1,6 @@
+import '../l10n/app_localizations.dart';
+import 'part_of_speech.dart';
+
 enum CharacterEmotion {
   studyingPc('assets/character/studying_pc.png'),
   studyingTablet('assets/character/studying_tablet.png'),
@@ -13,9 +16,13 @@ enum CharacterEmotion {
   const CharacterEmotion(this.assetPath);
 }
 
+/// [message] is a closure rather than a resolved [String] because these
+/// candidates are built inside pure Riverpod [Provider]s (no [BuildContext]
+/// access) — resolution happens later wherever a [BuildContext] is
+/// available, e.g. in [CharacterCard]'s build method.
 class CharacterAdvice {
   final CharacterEmotion emotion;
-  final String message;
+  final String Function(AppLocalizations l10n) message;
   const CharacterAdvice(this.emotion, this.message);
 }
 
@@ -27,13 +34,13 @@ class GenreInsight {
   /// Part of speech most struggled with (weak-word ratio >= 50% among
   /// categories with >=3 words) — takes priority over balance comments
   /// since it's actionable.
-  final String? weakPos;
+  final PartOfSpeech? weakPos;
 
   /// Set together: the most- and least-registered part of speech when one
   /// category makes up >=50% of categorized words (and there are >=3
   /// distinct categories in use).
-  final String? dominantPos;
-  final String? sparsePos;
+  final PartOfSpeech? dominantPos;
+  final PartOfSpeech? sparsePos;
 
   /// True when >=3 categories exist and counts are roughly even (no
   /// dominant one) — worth a compliment rather than a nudge.
@@ -75,11 +82,14 @@ List<CharacterAdvice> characterAdviceCandidates({
   GenreInsight? genreInsight,
 }) {
   if (wordCount == 0) {
-    return const [
-      CharacterAdvice(CharacterEmotion.beginnerPointing, 'まずは単語を登録してみよう！'),
+    return [
       CharacterAdvice(
         CharacterEmotion.beginnerPointing,
-        'ホームの入力欄からサクッと単語を追加できるよ',
+        (l10n) => l10n.adviceNoWords1,
+      ),
+      CharacterAdvice(
+        CharacterEmotion.beginnerPointing,
+        (l10n) => l10n.adviceNoWords2,
       ),
     ];
   }
@@ -88,17 +98,26 @@ List<CharacterAdvice> characterAdviceCandidates({
   // (currentStreak() only counts backward from today).
   if (streak == 0) {
     if (currentHour >= streakUrgentHour) {
-      return const [
-        CharacterAdvice(CharacterEmotion.angry, '今日中に復習しないとストリークが途切れちゃうよ！急いで！'),
-        CharacterAdvice(CharacterEmotion.angry, 'まだ間に合う…！今日の分だけでもやっておこう'),
+      return [
+        CharacterAdvice(
+          CharacterEmotion.angry,
+          (l10n) => l10n.adviceStreakUrgent1,
+        ),
+        CharacterAdvice(
+          CharacterEmotion.angry,
+          (l10n) => l10n.adviceStreakUrgent2,
+        ),
       ];
     }
-    return const [
+    return [
       CharacterAdvice(
         CharacterEmotion.question,
-        '今日はまだ復習してないね。時間があるときにやってみよう！',
+        (l10n) => l10n.adviceNotDoneYet1,
       ),
-      CharacterAdvice(CharacterEmotion.studyingPc, '今日の分、いつやる？空き時間にサクッとどう？'),
+      CharacterAdvice(
+        CharacterEmotion.studyingPc,
+        (l10n) => l10n.adviceNotDoneYet2,
+      ),
     ];
   }
 
@@ -106,11 +125,11 @@ List<CharacterAdvice> characterAdviceCandidates({
     return [
       CharacterAdvice(
         CharacterEmotion.troubled,
-        '苦手な単語が$weakCount個たまってるよ、一緒に復習しよう！',
+        (l10n) => l10n.adviceManyWeak1(weakCount),
       ),
-      const CharacterAdvice(
+      CharacterAdvice(
         CharacterEmotion.troubled,
-        '苦手リスト、ちょっと賑わってきたね。整理していこう',
+        (l10n) => l10n.adviceManyWeak2,
       ),
     ];
   }
@@ -119,40 +138,46 @@ List<CharacterAdvice> characterAdviceCandidates({
     return [
       CharacterAdvice(
         CharacterEmotion.studyingPc,
-        '今日の復習が$dueCount件残ってるよ、頑張ろう！',
+        (l10n) => l10n.adviceDueRemaining1(dueCount),
       ),
       CharacterAdvice(
         CharacterEmotion.studyingTablet,
-        'あと$dueCount件！サクッと終わらせちゃおう',
+        (l10n) => l10n.adviceDueRemaining2(dueCount),
       ),
     ];
   }
 
   if (streak >= 7) {
     return [
-      CharacterAdvice(CharacterEmotion.admiration, '🔥$streak日連続！その調子だよ！'),
-      CharacterAdvice(CharacterEmotion.admiration, 'ここまで$streak日、継続力すごいよ！'),
+      CharacterAdvice(
+        CharacterEmotion.admiration,
+        (l10n) => l10n.adviceStreak7Home1(streak),
+      ),
+      CharacterAdvice(
+        CharacterEmotion.admiration,
+        (l10n) => l10n.adviceStreak7Home2(streak),
+      ),
     ];
   }
 
   // Everything's fine — vary the greeting by time of day, and mix in an
   // analytical comment about genre balance/weakness when there's one to make.
   final base = switch (_timeBucketFor(currentHour)) {
-    _TimeBucket.morning => const [
-      CharacterAdvice(CharacterEmotion.convinced, '☀️ 朝から偉い！その調子で一日を始めよう'),
-      CharacterAdvice(CharacterEmotion.convinced, 'おはよう！今日も一問からいこう'),
+    _TimeBucket.morning => [
+      CharacterAdvice(CharacterEmotion.convinced, (l10n) => l10n.adviceMorning1),
+      CharacterAdvice(CharacterEmotion.convinced, (l10n) => l10n.adviceMorning2),
     ],
-    _TimeBucket.day => const [
-      CharacterAdvice(CharacterEmotion.convinced, '今日もコツコツ偉い！'),
-      CharacterAdvice(CharacterEmotion.convinced, 'いい調子！このまま続けよう'),
+    _TimeBucket.day => [
+      CharacterAdvice(CharacterEmotion.convinced, (l10n) => l10n.adviceDay1),
+      CharacterAdvice(CharacterEmotion.convinced, (l10n) => l10n.adviceDay2),
     ],
-    _TimeBucket.evening => const [
-      CharacterAdvice(CharacterEmotion.convinced, '🌆 夕方も継続中、ナイスペース！'),
-      CharacterAdvice(CharacterEmotion.convinced, '一日お疲れさま、もうひと踏ん張りどう？'),
+    _TimeBucket.evening => [
+      CharacterAdvice(CharacterEmotion.convinced, (l10n) => l10n.adviceEvening1),
+      CharacterAdvice(CharacterEmotion.convinced, (l10n) => l10n.adviceEvening2),
     ],
-    _TimeBucket.night => const [
-      CharacterAdvice(CharacterEmotion.convinced, '🌙 遅くまでお疲れさま、無理しすぎないでね'),
-      CharacterAdvice(CharacterEmotion.convinced, '今日も一日ありがとう、ゆっくり休んでね'),
+    _TimeBucket.night => [
+      CharacterAdvice(CharacterEmotion.convinced, (l10n) => l10n.adviceNight1),
+      CharacterAdvice(CharacterEmotion.convinced, (l10n) => l10n.adviceNight2),
     ],
   };
 
@@ -169,9 +194,12 @@ List<CharacterAdvice> _genreAdvice(GenreInsight? insight) {
     return [
       CharacterAdvice(
         CharacterEmotion.troubled,
-        '「$pos」でよく間違えてるみたい。重点的に復習してみる?',
+        (l10n) => l10n.adviceWeakPos1(pos.displayLabel(l10n)),
       ),
-      CharacterAdvice(CharacterEmotion.troubled, '「$pos」、ちょっと苦手そうだね。一緒に見直そう'),
+      CharacterAdvice(
+        CharacterEmotion.troubled,
+        (l10n) => l10n.adviceWeakPos2(pos.displayLabel(l10n)),
+      ),
     ];
   }
 
@@ -181,16 +209,28 @@ List<CharacterAdvice> _genreAdvice(GenreInsight? insight) {
     return [
       CharacterAdvice(
         CharacterEmotion.question,
-        '「$dominant」ばかり登録してるね。たまには「$sparse」も増やしてみる?',
+        (l10n) => l10n.adviceDominantSparse1(
+          dominant.displayLabel(l10n),
+          sparse.displayLabel(l10n),
+        ),
       ),
-      CharacterAdvice(CharacterEmotion.question, '品詞が「$dominant」に偏ってきてるかも'),
+      CharacterAdvice(
+        CharacterEmotion.question,
+        (l10n) => l10n.adviceDominantSparse2(dominant.displayLabel(l10n)),
+      ),
     ];
   }
 
   if (insight.balanced) {
-    return const [
-      CharacterAdvice(CharacterEmotion.admiration, '品詞のバランスがいいね！色んな単語を覚えられてる'),
-      CharacterAdvice(CharacterEmotion.admiration, '偏りなく単語を登録できてる、いい調子！'),
+    return [
+      CharacterAdvice(
+        CharacterEmotion.admiration,
+        (l10n) => l10n.adviceBalanced1,
+      ),
+      CharacterAdvice(
+        CharacterEmotion.admiration,
+        (l10n) => l10n.adviceBalanced2,
+      ),
     ];
   }
 
@@ -207,50 +247,80 @@ List<CharacterAdvice> calendarAdviceCandidates({
   required int totalActiveDays,
 }) {
   if (totalActiveDays == 0) {
-    return const [
+    return [
       CharacterAdvice(
         CharacterEmotion.beginnerPointing,
-        'まずは今日、1日分の記録を作ってみよう！',
+        (l10n) => l10n.adviceCalNoData1,
       ),
       CharacterAdvice(
         CharacterEmotion.beginnerPointing,
-        'カレンダーに色がつくと楽しいよ、やってみよう',
+        (l10n) => l10n.adviceCalNoData2,
       ),
     ];
   }
 
   if (streak >= 7) {
     return [
-      CharacterAdvice(CharacterEmotion.admiration, '🔥$streak日連続！このペース最高だよ！'),
-      CharacterAdvice(CharacterEmotion.admiration, '$streak日も続けられてる、本当にすごいね！'),
+      CharacterAdvice(
+        CharacterEmotion.admiration,
+        (l10n) => l10n.adviceCalStreak7_1(streak),
+      ),
+      CharacterAdvice(
+        CharacterEmotion.admiration,
+        (l10n) => l10n.adviceCalStreak7_2(streak),
+      ),
     ];
   }
 
   if (streak >= 2) {
     return [
-      CharacterAdvice(CharacterEmotion.admiration, '$streak日連続で順調だね！このまま続けよう'),
-      CharacterAdvice(CharacterEmotion.convinced, 'いいペース！$streak日連続キープ中だよ'),
+      CharacterAdvice(
+        CharacterEmotion.admiration,
+        (l10n) => l10n.adviceCalStreak2_1(streak),
+      ),
+      CharacterAdvice(
+        CharacterEmotion.convinced,
+        (l10n) => l10n.adviceCalStreak2_2(streak),
+      ),
     ];
   }
 
   // Streak is 0 or 1 (today not logged yet, or a streak just restarted) —
   // look at the bigger picture instead of dwelling on the broken chain.
   if (activeDaysLast30 >= 10) {
-    return const [
-      CharacterAdvice(CharacterEmotion.convinced, '連続じゃなくても、この30日でしっかり学べてるね！'),
-      CharacterAdvice(CharacterEmotion.convinced, 'ペースはまばらでも積み重ねはちゃんとできてるよ'),
+    return [
+      CharacterAdvice(
+        CharacterEmotion.convinced,
+        (l10n) => l10n.adviceCalActive30_1,
+      ),
+      CharacterAdvice(
+        CharacterEmotion.convinced,
+        (l10n) => l10n.adviceCalActive30_2,
+      ),
     ];
   }
 
   if (activeDaysLast30 >= 3) {
-    return const [
-      CharacterAdvice(CharacterEmotion.convinced, '少しずつでも学べてるの、ちゃんと積み重なってるよ！'),
-      CharacterAdvice(CharacterEmotion.studyingPc, 'その調子！焦らずコツコツいこう'),
+    return [
+      CharacterAdvice(
+        CharacterEmotion.convinced,
+        (l10n) => l10n.adviceCalActive3_1,
+      ),
+      CharacterAdvice(
+        CharacterEmotion.studyingPc,
+        (l10n) => l10n.adviceCalActive3_2,
+      ),
     ];
   }
 
-  return const [
-    CharacterAdvice(CharacterEmotion.studyingPc, '継続は力なり。また今日から積み重ねていこう！'),
-    CharacterAdvice(CharacterEmotion.beginnerPointing, '一歩ずつでいいよ、また始めてみよう！'),
+  return [
+    CharacterAdvice(
+      CharacterEmotion.studyingPc,
+      (l10n) => l10n.adviceCalDefault1,
+    ),
+    CharacterAdvice(
+      CharacterEmotion.beginnerPointing,
+      (l10n) => l10n.adviceCalDefault2,
+    ),
   ];
 }

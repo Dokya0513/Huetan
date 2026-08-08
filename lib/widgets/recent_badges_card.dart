@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../screens/badges_screen.dart';
 import '../theme/app_theme.dart';
@@ -16,6 +17,7 @@ class RecentBadgesCard extends ConsumerWidget {
     final colors = context.colors;
 
     if (recent.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -31,7 +33,7 @@ class RecentBadgesCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  '最近解錠したバッジ',
+                  l10n.recentBadgesTitle,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: colors.textPrimary,
@@ -44,7 +46,7 @@ class RecentBadgesCard extends ConsumerWidget {
                     MaterialPageRoute(builder: (_) => const BadgesScreen()),
                   );
                 },
-                child: const Text('すべて見る'),
+                child: Text(l10n.viewAllButton),
               ),
             ],
           ),

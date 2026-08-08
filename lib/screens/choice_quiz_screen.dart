@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../repositories/activity_repository.dart';
 import '../repositories/word_repository.dart';
@@ -146,6 +147,7 @@ class _ChoiceQuizScreenState extends ConsumerState<ChoiceQuizScreen> {
     final question = _questions[_index];
     final promptIsEnglish = question.direction == ReviewDirection.enToJa;
     final choicesAreEnglish = !promptIsEnglish;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(title: Text('${_index + 1} / ${_questions.length}')),
@@ -195,7 +197,11 @@ class _ChoiceQuizScreenState extends ConsumerState<ChoiceQuizScreen> {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: _next,
-                  child: Text(_index == _questions.length - 1 ? '結果を見る' : '次へ'),
+                  child: Text(
+                    _index == _questions.length - 1
+                        ? l10n.viewResultButton
+                        : l10n.onboardingNext,
+                  ),
                 ),
               ),
           ],
