@@ -15,6 +15,7 @@ import '../widgets/due_today_card.dart';
 import '../widgets/genre_distribution_bar.dart';
 import '../widgets/jlpt_distribution_bar.dart';
 import '../widgets/recent_badges_card.dart';
+import '../widgets/update_available_banner.dart';
 import '../widgets/weak_words_preview_card.dart';
 import '../widgets/weekly_activity_strip.dart';
 import '../widgets/xp_level_bar.dart';
@@ -129,6 +130,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
+          const UpdateAvailableBanner(),
           const CharacterCard(),
           const SizedBox(height: 16),
           const XpLevelBar(),

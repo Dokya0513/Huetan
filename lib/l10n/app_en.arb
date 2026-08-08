@@ -243,6 +243,11 @@
 
   "settingsCreditsJlptText": "JLPT vocabulary data (jlpt-word-list, MIT)\nhttps://github.com/elzup/jlpt-word-list\nSource data: Jonathan Waller's JLPT Resources (tanos.co.uk), CC BY\nUsed to determine each word's JLPT level",
   "settingsCreditsJmdictText": "JMdict/EDICT dictionary data\nElectronic Dictionary Research and Development Group (https://www.edrdg.org/)\nCC BY-SA 4.0, used via jmdict-simplified\nUsed for Japanese meaning/part-of-speech lookup",
+  "settingsCreditsCharacterText": "Character illustrations: Sokosuto (https://soco-st.com/)",
+
+  "updateAvailableTitle": "A new version is available",
+  "updateAvailableMessage": "v{version} has been released",
+  "updateViewButton": "View Release Page",
   "jlptFilterLabel": "Filter by JLPT level",
   "jlptDistributionTitle": "By JLPT Level ({total} total)"
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../data/database.dart';
 import '../models/cefr_level.dart';
@@ -18,6 +19,7 @@ import '../services/jlpt_service.dart';
 import '../services/pronunciation_service.dart';
 import '../services/settings_service.dart';
 import '../services/sound_service.dart';
+import '../services/update_check_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -119,6 +121,19 @@ final soundServiceProvider = Provider<SoundService>((ref) {
   final service = SoundService();
   ref.onDispose(service.dispose);
   return service;
+});
+
+final updateCheckServiceProvider = Provider<UpdateCheckService>((ref) {
+  return UpdateCheckService();
+});
+
+/// Checked once per app session (FutureProvider caches its result). Null
+/// means either no update is available or the check failed/was skipped —
+/// callers don't distinguish between those, since this is a best-effort,
+/// non-critical notice.
+final updateCheckProvider = FutureProvider<UpdateInfo?>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  return ref.watch(updateCheckServiceProvider).checkForUpdate(info.version);
 });
 
 final statsRepositoryProvider = Provider<StatsRepository>((ref) {

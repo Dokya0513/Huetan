@@ -255,6 +255,15 @@ class SettingsScreen extends ConsumerWidget {
               height: 1.5,
             ),
           ),
+          const SizedBox(height: 12),
+          Text(
+            l10n.settingsCreditsCharacterText,
+            style: TextStyle(
+              fontSize: 11,
+              color: colors.textSecondary,
+              height: 1.5,
+            ),
+          ),
           const SizedBox(height: 24),
           const Divider(),
           const SizedBox(height: 8),

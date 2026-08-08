@@ -352,6 +352,14 @@
 
   "settingsCreditsJlptText": "JLPT語彙データ（jlpt-word-list, MIT）\nhttps://github.com/elzup/jlpt-word-list\n元データ: Jonathan Waller氏 JLPT Resources (tanos.co.uk), CC BY\n単語のJLPTレベル判定に使用",
   "settingsCreditsJmdictText": "JMdict/EDICT辞書データ\nElectronic Dictionary Research and Development Group (https://www.edrdg.org/)\nCC BY-SA 4.0 / jmdict-simplified経由で使用\n日本語の意味・品詞の自動取得に使用",
+  "settingsCreditsCharacterText": "キャラクターイラスト: ソコスト (https://soco-st.com/)",
+
+  "updateAvailableTitle": "新しいバージョンがあります",
+  "updateAvailableMessage": "v{version} が公開されています",
+  "@updateAvailableMessage": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "updateViewButton": "リリースページを開く",
   "jlptFilterLabel": "JLPTレベルで絞り込み",
   "jlptDistributionTitle": "JLPTレベル内訳（全{total}語）",
   "@jlptDistributionTitle": {
