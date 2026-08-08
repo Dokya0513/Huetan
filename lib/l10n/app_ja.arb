@@ -1,0 +1,33 @@
+{
+  "@@locale": "ja",
+
+  "appTitle": "英単語帳",
+  "@appTitle": {
+    "description": "The application's title, used by the OS task switcher etc."
+  },
+
+  "navHome": "ホーム",
+  "navWords": "単語",
+  "navTest": "テスト",
+  "navCalendar": "カレンダー",
+  "navBadges": "バッジ",
+
+  "onboardingSkip": "スキップ",
+  "onboardingNext": "次へ",
+  "onboardingStart": "はじめる",
+
+  "onboardingWelcomeTitle": "ようこそ、ふえたんへ",
+  "onboardingWelcomeDescription": "会話で知らなかった英単語をサッと記録して、暗記カードで復習できるアプリです。",
+
+  "onboardingHomeTitle": "ホームタブ",
+  "onboardingHomeDescription": "レベル・連続学習日数・今日の復習件数がひと目でわかります。ここから単語をサッと追加することもできます。",
+
+  "onboardingWordsTitle": "単語タブ",
+  "onboardingWordsDescription": "単語の登録・編集・検索はこちら。英単語だけ入力すれば、意味や品詞、発音は自動で調べてくれます。",
+
+  "onboardingTestTitle": "テストタブ",
+  "onboardingTestDescription": "暗記カード・4択クイズ・穴埋めクイズの3種類。苦手な単語ほど出題されやすくなっています。",
+
+  "onboardingCalendarBadgesTitle": "カレンダー・バッジ",
+  "onboardingCalendarBadgesDescription": "学習の記録はカレンダーで、達成状況はバッジで確認できます。毎日コツコツ続けてみましょう！"
+}

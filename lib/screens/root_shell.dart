@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'badges_screen.dart';
 import 'calendar_screen.dart';
@@ -17,24 +18,24 @@ class RootShell extends StatefulWidget {
 class _RootShellState extends State<RootShell> {
   int _index = 0;
 
-  static const _tabs = [
-    RepaintBoundary(child: DashboardScreen()),
-    RepaintBoundary(child: HomeScreen()),
-    RepaintBoundary(
-      child: FlashcardSetupScreen(
-        allowedModes: [QuizMode.choiceQuiz, QuizMode.fillBlank],
-        title: 'テスト',
-      ),
-    ),
-    RepaintBoundary(child: CalendarScreen()),
-    RepaintBoundary(child: BadgesScreen()),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    final tabs = [
+      const RepaintBoundary(child: DashboardScreen()),
+      const RepaintBoundary(child: HomeScreen()),
+      RepaintBoundary(
+        child: FlashcardSetupScreen(
+          allowedModes: const [QuizMode.choiceQuiz, QuizMode.fillBlank],
+          title: l10n.navTest,
+        ),
+      ),
+      const RepaintBoundary(child: CalendarScreen()),
+      const RepaintBoundary(child: BadgesScreen()),
+    ];
     return Scaffold(
-      body: IndexedStack(index: _index, children: _tabs),
+      body: IndexedStack(index: _index, children: tabs),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (index) => setState(() => _index = index),
@@ -44,27 +45,27 @@ class _RootShellState extends State<RootShell> {
           NavigationDestination(
             icon: const Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home, color: colors.primary),
-            label: 'ホーム',
+            label: l10n.navHome,
           ),
           NavigationDestination(
             icon: const Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book, color: colors.primary),
-            label: '単語',
+            label: l10n.navWords,
           ),
           NavigationDestination(
             icon: const Icon(Icons.quiz_outlined),
             selectedIcon: Icon(Icons.quiz, color: colors.primary),
-            label: 'テスト',
+            label: l10n.navTest,
           ),
           NavigationDestination(
             icon: const Icon(Icons.calendar_month_outlined),
             selectedIcon: Icon(Icons.calendar_month, color: colors.primary),
-            label: 'カレンダー',
+            label: l10n.navCalendar,
           ),
           NavigationDestination(
             icon: const Icon(Icons.military_tech_outlined),
             selectedIcon: Icon(Icons.military_tech, color: colors.primary),
-            label: 'バッジ',
+            label: l10n.navBadges,
           ),
         ],
       ),

@@ -1,0 +1,30 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Fuetan",
+
+  "navHome": "Home",
+  "navWords": "Words",
+  "navTest": "Test",
+  "navCalendar": "Calendar",
+  "navBadges": "Badges",
+
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingStart": "Get Started",
+
+  "onboardingWelcomeTitle": "Welcome to Fuetan",
+  "onboardingWelcomeDescription": "Quickly jot down English words you didn't know from a conversation, then review them with flashcards.",
+
+  "onboardingHomeTitle": "Home tab",
+  "onboardingHomeDescription": "See your level, streak, and today's review count at a glance. You can also quickly add a word from here.",
+
+  "onboardingWordsTitle": "Words tab",
+  "onboardingWordsDescription": "Add, edit, and search your words here. Just type the English word — the meaning, part of speech, and pronunciation are looked up automatically.",
+
+  "onboardingTestTitle": "Test tab",
+  "onboardingTestDescription": "Three review modes: flashcards, multiple choice, and fill-in-the-blank. Words you're weaker on show up more often.",
+
+  "onboardingCalendarBadgesTitle": "Calendar & Badges",
+  "onboardingCalendarBadgesDescription": "Track your study history on the calendar and your achievements with badges. Try to keep it up every day!"
+}

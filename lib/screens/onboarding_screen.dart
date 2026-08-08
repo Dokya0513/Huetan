@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import 'root_shell.dart';
@@ -17,31 +18,31 @@ class _OnboardingPage {
   });
 }
 
-const _pages = [
+List<_OnboardingPage> _buildPages(AppLocalizations l10n) => [
   _OnboardingPage(
     assetPath: 'assets/character/beginner_pointing.png',
-    title: 'ようこそ、ふえたんへ',
-    description: '会話で知らなかった英単語をサッと記録して、暗記カードで復習できるアプリです。',
+    title: l10n.onboardingWelcomeTitle,
+    description: l10n.onboardingWelcomeDescription,
   ),
   _OnboardingPage(
     assetPath: 'assets/character/studying_pc.png',
-    title: 'ホームタブ',
-    description: 'レベル・連続学習日数・今日の復習件数がひと目でわかります。ここから単語をサッと追加することもできます。',
+    title: l10n.onboardingHomeTitle,
+    description: l10n.onboardingHomeDescription,
   ),
   _OnboardingPage(
     assetPath: 'assets/character/studying_tablet.png',
-    title: '単語タブ',
-    description: '単語の登録・編集・検索はこちら。英単語だけ入力すれば、意味や品詞、発音は自動で調べてくれます。',
+    title: l10n.onboardingWordsTitle,
+    description: l10n.onboardingWordsDescription,
   ),
   _OnboardingPage(
     assetPath: 'assets/character/convinced.png',
-    title: 'テストタブ',
-    description: '暗記カード・4択クイズ・穴埋めクイズの3種類。苦手な単語ほど出題されやすくなっています。',
+    title: l10n.onboardingTestTitle,
+    description: l10n.onboardingTestDescription,
   ),
   _OnboardingPage(
     assetPath: 'assets/character/admiration.png',
-    title: 'カレンダー・バッジ',
-    description: '学習の記録はカレンダーで、達成状況はバッジで確認できます。毎日コツコツ続けてみましょう！',
+    title: l10n.onboardingCalendarBadgesTitle,
+    description: l10n.onboardingCalendarBadgesDescription,
   ),
 ];
 
@@ -56,6 +57,8 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+  static const _pageCount = 5;
+
   final _controller = PageController();
   int _index = 0;
 
@@ -75,7 +78,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _next() {
-    if (_index == _pages.length - 1) {
+    if (_index == _pageCount - 1) {
       _finish();
       return;
     }
@@ -88,7 +91,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isLast = _index == _pages.length - 1;
+    final l10n = AppLocalizations.of(context)!;
+    final pages = _buildPages(l10n);
+    final isLast = _index == pages.length - 1;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -100,7 +105,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: TextButton(
                 onPressed: _finish,
                 child: Text(
-                  'スキップ',
+                  l10n.onboardingSkip,
                   style: TextStyle(color: colors.textSecondary),
                 ),
               ),
@@ -108,10 +113,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Expanded(
               child: PageView.builder(
                 controller: _controller,
-                itemCount: _pages.length,
+                itemCount: pages.length,
                 onPageChanged: (i) => setState(() => _index = i),
                 itemBuilder: (context, i) {
-                  final page = _pages[i];
+                  final page = pages[i];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Column(
@@ -145,7 +150,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_pages.length, (i) {
+              children: List.generate(pages.length, (i) {
                 final active = i == _index;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
@@ -173,7 +178,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                   ),
                   child: Text(
-                    isLast ? 'はじめる' : '次へ',
+                    isLast ? l10n.onboardingStart : l10n.onboardingNext,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
