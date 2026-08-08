@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:drift/drift.dart';
 
 import '../data/database.dart';
+import '../models/learning_direction.dart';
 import 'activity_repository.dart' show dateOnly;
 
 /// Leitner box range: lower box = weaker word = shown more often.
@@ -28,23 +29,38 @@ class WordRepository {
   final AppDatabase db;
   WordRepository(this.db);
 
-  Stream<List<Word>> watchAllWords() {
-    return (db.select(
-      db.words,
-    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
+  Stream<List<Word>> watchAllWords({required LearningDirection direction}) {
+    return (db.select(db.words)
+          ..where((t) => t.learningDirection.equals(direction.dbValue))
+          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+        .watch();
   }
 
-  Future<List<Word>> getAllWords() => db.select(db.words).get();
+  Future<List<Word>> getAllWords({required LearningDirection direction}) =>
+      (db.select(
+        db.words,
+      )..where((t) => t.learningDirection.equals(direction.dbValue))).get();
 
-  /// Base query for words that can be quizzed (have a Japanese meaning),
-  /// optionally restricted to ones due for review today or earlier
-  /// (including never-reviewed words, whose `nextReviewDate` is null) and/or
-  /// to a specific part of speech.
+  /// Base query for words that can be quizzed (have a meaning filled in on
+  /// their mode's target-language side), optionally restricted to ones due
+  /// for review today or earlier (including never-reviewed words, whose
+  /// `nextReviewDate` is null) and/or to a specific part of speech.
   SimpleSelectStatement<$WordsTable, Word> _quizzableQuery({
+    required LearningDirection direction,
     bool dueOnly = false,
     String? partOfSpeech,
   }) {
-    final query = db.select(db.words)..where((t) => t.japanese.isNotNull());
+    final query = db.select(db.words)
+      ..where((t) => t.learningDirection.equals(direction.dbValue));
+    if (direction == LearningDirection.enTarget) {
+      query.where((t) => t.japanese.isNotNull());
+    } else {
+      // english is NOT NULL at the schema level, so a jaTarget quick-add
+      // with its meaning left blank stores '' rather than null — matching
+      // that here, the same way the enTarget branch above checks for an
+      // unset (null) japanese meaning.
+      query.where((t) => t.english.equals('').not());
+    }
     if (dueOnly) {
       final tomorrow = dateOnly(DateTime.now()).add(const Duration(days: 1));
       query.where(
@@ -60,17 +76,22 @@ class WordRepository {
   }
 
   /// Words due for review today (or never reviewed yet).
-  Stream<List<Word>> watchDueWords() => _quizzableQuery(dueOnly: true).watch();
+  Stream<List<Word>> watchDueWords({required LearningDirection direction}) =>
+      _quizzableQuery(direction: direction, dueOnly: true).watch();
 
   /// Adds a word. [japanese] may be left null for a "quick add" entry whose
-  /// meaning will be filled in later; such words are excluded from
-  /// flashcard sessions until a meaning is set.
+  /// meaning will be filled in later (enTarget mode only — see
+  /// LearningDirection); such words are excluded from flashcard sessions
+  /// until a meaning is set. [learningDirection] is stamped once at
+  /// creation and never changes afterward.
   Future<int> addWord({
     required String english,
     String? japanese,
     String? exampleSentence,
     String? partOfSpeech,
     String? audioUrl,
+    String? japaneseReading,
+    required LearningDirection learningDirection,
   }) {
     return db
         .into(db.words)
@@ -81,6 +102,8 @@ class WordRepository {
             exampleSentence: Value(exampleSentence),
             partOfSpeech: Value(partOfSpeech),
             audioUrl: Value(audioUrl),
+            japaneseReading: Value(japaneseReading),
+            learningDirection: Value(learningDirection.dbValue),
           ),
         );
   }
@@ -92,6 +115,7 @@ class WordRepository {
     String? exampleSentence,
     String? partOfSpeech,
     String? audioUrl,
+    String? japaneseReading,
   }) {
     return (db.update(db.words)..where((t) => t.id.equals(id))).write(
       WordsCompanion(
@@ -100,6 +124,7 @@ class WordRepository {
         exampleSentence: Value(exampleSentence),
         partOfSpeech: Value(partOfSpeech),
         audioUrl: Value(audioUrl),
+        japaneseReading: Value(japaneseReading),
       ),
     );
   }
@@ -117,9 +142,13 @@ class WordRepository {
     String? japanese,
     String? partOfSpeech,
     int? excludingId,
+    required LearningDirection learningDirection,
   }) async {
     final normalizedEnglish = english.trim().toLowerCase();
-    final all = await db.select(db.words).get();
+    final all = await (db.select(db.words)..where(
+          (t) => t.learningDirection.equals(learningDirection.dbValue),
+        ))
+        .get();
     for (final word in all) {
       if (excludingId != null && word.id == excludingId) continue;
       if (word.english.trim().toLowerCase() != normalizedEnglish) continue;
@@ -174,12 +203,14 @@ class WordRepository {
   /// replacement) is drawn, favoring words with a lower Leitner box (i.e.
   /// words the user gets wrong more often) so weak words appear more.
   Future<List<Word>> selectSessionWords({
+    required LearningDirection direction,
     int? count,
     bool dueOnly = false,
     String? partOfSpeech,
     bool Function(Word word)? extraFilter,
   }) async {
     var all = await _quizzableQuery(
+      direction: direction,
       dueOnly: dueOnly,
       partOfSpeech: partOfSpeech,
     ).get();
@@ -251,9 +282,16 @@ class WordRepository {
   /// Words ordered from weakest (lowest box) to strongest. Never-reviewed
   /// words are excluded — a freshly added word defaults to the lowest box,
   /// but that reflects "no data yet," not an actual weakness.
-  Stream<List<Word>> watchWeakWords({int limit = 100}) {
+  Stream<List<Word>> watchWeakWords({
+    required LearningDirection direction,
+    int limit = 100,
+  }) {
     return (db.select(db.words)
-          ..where((t) => t.lastReviewedAt.isNotNull())
+          ..where(
+            (t) =>
+                t.lastReviewedAt.isNotNull() &
+                t.learningDirection.equals(direction.dbValue),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.leitnerBox)])
           ..limit(limit))
         .watch();

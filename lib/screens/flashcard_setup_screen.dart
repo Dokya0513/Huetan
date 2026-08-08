@@ -5,7 +5,10 @@ import '../data/database.dart';
 import '../l10n/app_localizations.dart';
 import '../models/cefr_level.dart';
 import '../models/fill_blank.dart';
+import '../models/jlpt_level.dart';
+import '../models/learning_direction.dart';
 import '../models/part_of_speech.dart';
+import '../models/word_display.dart';
 import '../providers/providers.dart';
 import '../repositories/word_repository.dart';
 import '../theme/app_theme.dart';
@@ -60,6 +63,7 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
   late QuizMode _mode;
   PartOfSpeech? _posFilter;
   CefrLevel? _cefrFilter;
+  JlptLevel? _jlptFilter;
 
   @override
   void initState() {
@@ -67,22 +71,32 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
     _mode = widget.allowedModes.first;
   }
 
-  bool Function(Word word)? _buildExtraFilter(Map<String, CefrLevel>? cefr) {
+  bool Function(Word word)? _buildExtraFilter(
+    Map<String, CefrLevel>? cefr,
+    Map<String, JlptLevel>? jlpt,
+  ) {
     final cefrFilter = _cefrFilter;
+    final jlptFilter = _jlptFilter;
     final requireExample = _mode == QuizMode.fillBlank;
-    if (cefrFilter == null && !requireExample) return null;
+    if (cefrFilter == null && jlptFilter == null && !requireExample) {
+      return null;
+    }
 
     return (word) {
       if (requireExample) {
         final sentence = word.exampleSentence;
         if (sentence == null ||
-            !wordAppearsInSentence(word.english, sentence)) {
+            !wordAppearsInSentence(word.targetText, sentence)) {
           return false;
         }
       }
       if (cefrFilter != null) {
-        final level = cefr?[word.english.trim().toLowerCase()];
+        final level = cefr?[word.targetText.trim().toLowerCase()];
         if (level != cefrFilter) return false;
+      }
+      if (jlptFilter != null) {
+        final level = jlpt?[word.targetText.trim().toLowerCase()];
+        if (level != jlptFilter) return false;
       }
       return true;
     };
@@ -100,12 +114,14 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
     }
 
     final cefrWordlist = ref.read(cefrWordlistProvider).value;
+    final jlptWordlist = ref.read(jlptWordlistProvider).value;
     final repository = ref.read(wordRepositoryProvider);
     final words = await repository.selectSessionWords(
+      direction: ref.read(learningModeProvider),
       count: dueOnly ? null : _selectedCount,
       dueOnly: dueOnly,
       partOfSpeech: _posFilter?.label,
-      extraFilter: _buildExtraFilter(cefrWordlist),
+      extraFilter: _buildExtraFilter(cefrWordlist, jlptWordlist),
     );
 
     if (words.isEmpty) {
@@ -151,19 +167,28 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
 
   /// Live preview count matching the current filters — lets the user see
   /// "0 words" and fix the filter before hitting start.
-  int _matchingCount(List<Word> allWords, Map<String, CefrLevel>? cefr) {
+  int _matchingCount(
+    List<Word> allWords,
+    Map<String, CefrLevel>? cefr,
+    Map<String, JlptLevel>? jlpt,
+  ) {
     return allWords.where((w) {
-      if (w.japanese == null) return false;
+      if (w.meaningText == null) return false;
       if (_posFilter != null && w.partOfSpeech != _posFilter!.label) {
         return false;
       }
       if (_cefrFilter != null) {
-        final level = cefr?[w.english.trim().toLowerCase()];
+        final level = cefr?[w.targetText.trim().toLowerCase()];
         if (level != _cefrFilter) return false;
+      }
+      if (_jlptFilter != null) {
+        final level = jlpt?[w.targetText.trim().toLowerCase()];
+        if (level != _jlptFilter) return false;
       }
       if (_mode == QuizMode.fillBlank) {
         final sentence = w.exampleSentence;
-        if (sentence == null || !wordAppearsInSentence(w.english, sentence)) {
+        if (sentence == null ||
+            !wordAppearsInSentence(w.targetText, sentence)) {
           return false;
         }
       }
@@ -176,8 +201,9 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
     final wordsAsync = ref.watch(allWordsProvider);
     final allWords = wordsAsync.value ?? [];
     final cefrWordlist = ref.watch(cefrWordlistProvider).value;
+    final jlptWordlist = ref.watch(jlptWordlistProvider).value;
     final dueCount = ref.watch(dueWordsProvider).value?.length;
-    final matchingCount = _matchingCount(allWords, cefrWordlist);
+    final matchingCount = _matchingCount(allWords, cefrWordlist, jlptWordlist);
     final showDirectionPicker =
         _mode == QuizMode.flashcard || _mode == QuizMode.choiceQuiz;
     final needsChoices =
@@ -291,28 +317,56 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              l10n.cefrFilterLabel,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: [
-                _choiceChip(
-                  label: l10n.noFilter,
-                  selected: _cefrFilter == null,
-                  onSelected: () => setState(() => _cefrFilter = null),
-                ),
-                for (final level in CefrLevel.values)
+            // CEFR-J only classifies English words; JLPT only classifies
+            // Japanese words — each filter section only shows in its own
+            // mode.
+            if (ref.watch(learningModeProvider) == LearningDirection.enTarget) ...[
+              const SizedBox(height: 24),
+              Text(
+                l10n.cefrFilterLabel,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
                   _choiceChip(
-                    label: level.label,
-                    selected: _cefrFilter == level,
-                    onSelected: () => setState(() => _cefrFilter = level),
+                    label: l10n.noFilter,
+                    selected: _cefrFilter == null,
+                    onSelected: () => setState(() => _cefrFilter = null),
                   ),
-              ],
-            ),
+                  for (final level in CefrLevel.values)
+                    _choiceChip(
+                      label: level.label,
+                      selected: _cefrFilter == level,
+                      onSelected: () => setState(() => _cefrFilter = level),
+                    ),
+                ],
+              ),
+            ] else ...[
+              const SizedBox(height: 24),
+              Text(
+                l10n.jlptFilterLabel,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  _choiceChip(
+                    label: l10n.noFilter,
+                    selected: _jlptFilter == null,
+                    onSelected: () => setState(() => _jlptFilter = null),
+                  ),
+                  for (final level in JlptLevel.values)
+                    _choiceChip(
+                      label: level.label,
+                      selected: _jlptFilter == level,
+                      onSelected: () => setState(() => _jlptFilter = level),
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: 12),
             if (isLocked)
               Container(

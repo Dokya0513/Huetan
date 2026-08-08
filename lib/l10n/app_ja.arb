@@ -121,6 +121,7 @@
   },
 
   "enterEnglishFirst": "先に英単語を入力してください",
+  "enterJapaneseFirst": "先に日本語の単語を入力してください",
   "dictionaryLookupFailed": "辞書から情報を取得できませんでした",
   "multipleSensesPrompt": "この単語には複数の品詞があります。どちらの意味で登録しますか？",
   "alreadyRegisteredTitle": "既に登録されています",
@@ -336,5 +337,24 @@
   "badgeCorrect1Title": "はじめての正解",
   "badgeCorrect1Description": "暗記カードで1問正解した",
   "badgeCorrect100Title": "百戦錬磨",
-  "badgeCorrect100Description": "累計100問正解した"
+  "badgeCorrect100Description": "累計100問正解した",
+
+  "settingsLearningModeSectionHeader": "学習モード",
+  "settingsLearningModeLabel": "日本語を学ぶ",
+  "settingsLearningModeEnTargetDescription": "英単語を記録して覚える（意味は日本語）",
+  "settingsLearningModeJaTargetDescription": "日本語の単語を記録して覚える（意味は英語）",
+
+  "onboardingChooseModeTitle": "何を学びますか？",
+  "onboardingChooseEnTargetLabel": "英語を学ぶ",
+  "onboardingChooseJaTargetLabel": "日本語を学ぶ",
+
+  "dashboardQuickAddJaHint": "日本語の単語をサッと追加（意味は後で入力）",
+
+  "settingsCreditsJlptText": "JLPT語彙データ（jlpt-word-list, MIT）\nhttps://github.com/elzup/jlpt-word-list\n元データ: Jonathan Waller氏 JLPT Resources (tanos.co.uk), CC BY\n単語のJLPTレベル判定に使用",
+  "settingsCreditsJmdictText": "JMdict/EDICT辞書データ\nElectronic Dictionary Research and Development Group (https://www.edrdg.org/)\nCC BY-SA 4.0 / jmdict-simplified経由で使用\n日本語の意味・品詞の自動取得に使用",
+  "jlptFilterLabel": "JLPTレベルで絞り込み",
+  "jlptDistributionTitle": "JLPTレベル内訳（全{total}語）",
+  "@jlptDistributionTitle": {
+    "placeholders": { "total": { "type": "int" } }
+  }
 }

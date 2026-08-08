@@ -35,8 +35,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _warmUp() async {
     // Forces the sqlite connection open and the schema migration to run,
-    // so RootShell's first frame doesn't stall on it.
-    final dbReady = ref.read(wordRepositoryProvider).getAllWords();
+    // so RootShell's first frame doesn't stall on it. Runs before the
+    // learning-mode setting is necessarily loaded, so this deliberately
+    // doesn't go through a mode-filtered query.
+    final dbReady = ref
+        .read(databaseProvider)
+        .customSelect('SELECT 1')
+        .get();
     final onboardingSeenFuture = ref
         .read(settingsServiceProvider)
         .loadOnboardingSeen();

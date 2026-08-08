@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/learning_direction.dart';
 import '../providers/providers.dart';
 import '../repositories/word_repository.dart';
 import '../services/dictionary_service.dart';
@@ -12,6 +13,7 @@ import '../widgets/cefr_distribution_bar.dart';
 import '../widgets/character_card.dart';
 import '../widgets/due_today_card.dart';
 import '../widgets/genre_distribution_bar.dart';
+import '../widgets/jlpt_distribution_bar.dart';
 import '../widgets/recent_badges_card.dart';
 import '../widgets/weak_words_preview_card.dart';
 import '../widgets/weekly_activity_strip.dart';
@@ -52,13 +54,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (english.isEmpty) return;
 
     final repository = ref.read(wordRepositoryProvider);
-    final wordId = await repository.addWord(english: english);
+    final wordId = await repository.addWord(
+      english: english,
+      learningDirection: LearningDirection.enTarget,
+    );
     _quickAddController.clear();
 
     // Fire-and-forget: fill in part of speech/example/audio from the
     // dictionary in the background so quick-added words don't stay
     // completely uncategorized, without making the user wait on a lookup.
     unawaited(_backgroundDictionaryFill(repository, wordId, english));
+  }
+
+  /// jaTarget equivalent of [_quickAdd]: just the target word, meaning left
+  /// blank to fill in later — no dictionary lookup exists for Japanese yet
+  /// (see word_form_screen.dart's jaTarget handling), so there's no
+  /// background fill step, just a plain word entry.
+  Future<void> _quickAddJa() async {
+    final japanese = _quickAddController.text.trim();
+    if (japanese.isEmpty) return;
+
+    final repository = ref.read(wordRepositoryProvider);
+    await repository.addWord(
+      english: '',
+      japanese: japanese,
+      learningDirection: LearningDirection.jaTarget,
+    );
+    _quickAddController.clear();
   }
 
   Future<void> _backgroundDictionaryFill(
@@ -88,6 +110,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     });
 
     final l10n = AppLocalizations.of(context)!;
+    final isEnTarget = ref.watch(learningModeProvider) == LearningDirection.enTarget;
     return Scaffold(
       appBar: AppBar(
         title: AppTitleRow(title: l10n.navHome),
@@ -116,16 +139,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 child: TextField(
                   controller: _quickAddController,
                   decoration: InputDecoration(
-                    hintText: l10n.dashboardQuickAddHint,
+                    hintText: isEnTarget
+                        ? l10n.dashboardQuickAddHint
+                        : l10n.dashboardQuickAddJaHint,
                     isDense: true,
                     border: const OutlineInputBorder(),
                   ),
-                  onSubmitted: (_) => _quickAdd(),
+                  onSubmitted: (_) => isEnTarget ? _quickAdd() : _quickAddJa(),
                 ),
               ),
               const SizedBox(width: 8),
               IconButton.filledTonal(
-                onPressed: _quickAdd,
+                onPressed: isEnTarget ? _quickAdd : _quickAddJa,
                 icon: const Icon(Icons.add),
                 tooltip: l10n.addTooltip,
               ),
@@ -143,6 +168,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           const GenreDistributionBar(),
           const SizedBox(height: 16),
           const CefrDistributionBar(),
+          const SizedBox(height: 16),
+          const JlptDistributionBar(),
         ],
       ),
     );

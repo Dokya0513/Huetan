@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../l10n/app_localizations.dart';
+import '../l10n/locale_utils.dart';
+import '../models/learning_direction.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 
@@ -87,14 +89,51 @@ class SettingsScreen extends ConsumerWidget {
     final seVolume = ref.watch(seVolumeProvider);
     final voiceVolume = ref.watch(voiceVolumeProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final learningMode = ref.watch(learningModeProvider);
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
+    return SystemLocaleOverride(
+      child: Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Deliberately bilingual, not routed through AppLocalizations —
+          // this is the one control where "which language can you read"
+          // is exactly the question being asked (see the equivalent note
+          // on _ModeChoiceView in onboarding_screen.dart). Relying on
+          // system-locale text here would be circular: a device set to
+          // the language the user *can't* read would leave them unable
+          // to even understand this toggle.
+          const _SectionHeader('学習モード / Learning Mode'),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text(
+              '学習対象の言語 / Learning language',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            subtitle: Text(
+              learningMode == LearningDirection.jaTarget
+                  ? '日本語の単語を記録して覚える（意味は英語）\n'
+                        'Record Japanese words to learn (meanings in English)'
+                  : '英単語を記録して覚える（意味は日本語）\n'
+                        'Record English words to learn (meanings in Japanese)',
+            ),
+            value: learningMode == LearningDirection.jaTarget,
+            onChanged: (value) {
+              ref
+                  .read(learningModeProvider.notifier)
+                  .setMode(
+                    value
+                        ? LearningDirection.jaTarget
+                        : LearningDirection.enTarget,
+                  );
+            },
+          ),
+          const SizedBox(height: 8),
+          const Divider(),
+          const SizedBox(height: 8),
           _SectionHeader(l10n.settingsThemeSectionHeader),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
@@ -198,6 +237,24 @@ class SettingsScreen extends ConsumerWidget {
               height: 1.5,
             ),
           ),
+          const SizedBox(height: 12),
+          Text(
+            l10n.settingsCreditsJlptText,
+            style: TextStyle(
+              fontSize: 11,
+              color: colors.textSecondary,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            l10n.settingsCreditsJmdictText,
+            style: TextStyle(
+              fontSize: 11,
+              color: colors.textSecondary,
+              height: 1.5,
+            ),
+          ),
           const SizedBox(height: 24),
           const Divider(),
           const SizedBox(height: 8),
@@ -216,6 +273,7 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
         ],
+      ),
       ),
     );
   }

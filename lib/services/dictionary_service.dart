@@ -10,13 +10,31 @@ import '../models/part_of_speech.dart';
 class DictionarySense {
   final PartOfSpeech partOfSpeech;
   final String? example;
-  const DictionarySense({required this.partOfSpeech, this.example});
+  /// A short meaning/gloss for this sense, if the source provides one —
+  /// dictionaryapi.dev (English) doesn't, so this stays null there and the
+  /// user always types the meaning by hand; JMdict (Japanese) does, so
+  /// JapaneseDictionaryService can use it to suggest a meaning.
+  final String? meaning;
+  const DictionarySense({
+    required this.partOfSpeech,
+    this.example,
+    this.meaning,
+  });
 }
 
 class DictionaryLookupResult {
   final List<DictionarySense> senses;
   final String? audioUrl;
-  const DictionaryLookupResult({required this.senses, this.audioUrl});
+  /// Kana reading for the looked-up word, when the source provides one
+  /// (JMdict does; dictionaryapi.dev doesn't, so this stays null there).
+  /// Used for jaTarget TTS instead of raw kanji — see
+  /// [Words.japaneseReading]'s doc comment for why.
+  final String? reading;
+  const DictionaryLookupResult({
+    required this.senses,
+    this.audioUrl,
+    this.reading,
+  });
 }
 
 /// Looks up an English word using the free dictionaryapi.dev API

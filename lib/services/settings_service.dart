@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/learning_direction.dart';
+
 const double defaultVolume = 1.0;
 
 enum VolumeChannel {
@@ -16,6 +18,7 @@ enum VolumeChannel {
 class SettingsService {
   static const _darkModeKey = 'dark_mode';
   static const _onboardingSeenKey = 'onboarding_seen';
+  static const _learningModeKey = 'learning_mode';
 
   Future<double> loadVolume(VolumeChannel channel) async {
     final prefs = await SharedPreferences.getInstance();
@@ -45,5 +48,18 @@ class SettingsService {
   Future<void> saveOnboardingSeen() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_onboardingSeenKey, true);
+  }
+
+  Future<LearningDirection> loadLearningMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_learningModeKey);
+    return raw == null
+        ? LearningDirection.enTarget
+        : LearningDirection.fromDbValue(raw);
+  }
+
+  Future<void> saveLearningMode(LearningDirection mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_learningModeKey, mode.dbValue);
   }
 }

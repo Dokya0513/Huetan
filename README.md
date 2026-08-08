@@ -1,10 +1,18 @@
-# ふえたん
+# ふえたん / Fuetan
 
-会話で知らなかった英単語をサッと記録し、暗記カードで復習できる英単語学習アプリ（Windows デスクトップ版 / Android版）。
+会話で知らなかった単語をサッと記録し、暗記カードで復習できる語学学習アプリ（Windows デスクトップ版 / Android版）。日本語話者が英単語を学ぶモードと、英語話者が日本語の単語を学ぶモードの両方に対応しています。
 
-## ご利用前に（免責事項）
+## ご利用前に（免責事項・開発について）
 
 これは個人が趣味で開発しているアプリで、動作の保証やサポート体制はありません。**利用によって生じたいかなる損害（データの消失、PCの不具合など）についても、開発者は責任を負いかねます。** ご自身の判断・自己責任でご利用いただける方のみ、ダウンロードをお願いします。
+
+**本アプリのコードは Anthropic の Claude（AIコーディングアシスタント）を使用して開発されています。** この点をご理解・ご了承いただける方のみ、ダウンロード・ご利用をお願いします。
+
+---
+
+This app is developed by an individual as a hobby project, with no guarantee of functionality or support. **The developer is not responsible for any damages arising from use (data loss, PC malfunction, etc.).** Please download and use it only at your own risk and discretion.
+
+**This app's code was developed using Anthropic's Claude (an AI coding assistant).** Please download and use it only if you understand and accept this.
 
 ## インストール方法（PCに詳しくない方向け）
 
@@ -44,23 +52,26 @@
 
 ### クレジット
 
-- 単語レベル判定に [CEFR-J Wordlist Version 1.6](http://www.cefr-j.org/download.html)（東京外国語大学 投野由紀夫研究室）を使用しています
+- 英単語のレベル判定に [CEFR-J Wordlist Version 1.6](http://www.cefr-j.org/download.html)（東京外国語大学 投野由紀夫研究室）を使用しています
+- 日本語単語のレベル判定に [jlpt-word-list](https://github.com/elzup/jlpt-word-list)（MIT、元データ: Jonathan Waller氏 JLPT Resources / tanos.co.uk, CC BY）を使用しています
+- 日本語辞書の自動取得に JMdict/EDICT（Electronic Dictionary Research and Development Group、CC BY-SA 4.0）を [jmdict-simplified](https://github.com/scriptin/jmdict-simplified) 経由で使用しています
 - キャラクターイラストは [ソコスト](https://soco-st.com/) の素材を使用しています（素材自体の再配布は禁止されています）
 - フォントに [Baloo 2](https://fonts.google.com/specimen/Baloo+2) / [Zen Maru Gothic](https://fonts.google.com/specimen/Zen+Maru+Gothic)（いずれも SIL Open Font License）を使用しています
 
 ## 主な機能
 
-- 単語の登録・編集（英単語 / 意味 / 例文 / 品詞 / 発音）、一覧の検索・並び替え
-- クイック追加（英単語だけサッと登録し、意味・品詞は裏側で自動取得）
+- **2つの学習モード**: 英語学習（日本語話者向け・UI日本語）/ 日本語学習（英語話者向け・UI英語）を設定画面でいつでも切り替え可能。UIは選んだモードに応じて自動で言語が切り替わります
+- 単語の登録・編集（単語 / 意味 / 例文 / 品詞 / 発音）、一覧の検索・並び替え
+- クイック追加（対象語だけサッと登録し、意味・品詞は裏側で自動取得）
 - 3つの復習形式
   - 暗記カード（Leitner Systemで苦手な単語ほど出題されやすい重み付け、表裏めくって自己採点）
   - 4択クイズ（単語または意味を見せて4択で自動採点）
   - 穴埋めクイズ（例文の単語を空欄にして4択で自動採点）
-- 品詞・CEFRレベルで絞り込んだ復習セッション（試験前のピンポイント対策などに）
+- 品詞・レベルで絞り込んだ復習セッション（試験前のピンポイント対策などに）
 - SRS方式の復習期限管理（正解を重ねるごとに次回復習までの間隔が伸びる）
-- 辞書API連携（品詞・例文・発音の自動取得、複数の品詞がある単語は選択可能）
-- 発音再生（辞書の音声をキャッシュして再生 / 端末TTSの読み上げ）
-- CEFR-Jワードリストによる単語レベル（A1〜B2）判定・内訳表示
+- 辞書自動連携（英語学習モード: 辞書API、日本語学習モード: JMdict）で品詞・例文・意味・発音を自動取得、複数の語義がある単語は選択可能
+- 発音再生（辞書の音声をキャッシュして再生 / 端末TTSの読み上げ、日本語は辞書データの読みを優先して誤読を防止）
+- CEFR-J（英語）/ JLPT（日本語）による単語レベル判定・内訳表示
 - 品詞ごとのジャンル内訳表示
 - 学習カレンダー（活動日ヒートマップ、直近7日間の「追加した単語数／取り組んだ単語数」推移グラフ）
 - XP・レベル、バッジ、連続学習日数（ストリーク）などのゲーミフィケーション

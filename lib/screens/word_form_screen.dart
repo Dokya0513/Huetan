@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
 import '../l10n/app_localizations.dart';
+import '../models/learning_direction.dart';
 import '../models/part_of_speech.dart';
 import '../providers/providers.dart';
 import '../services/dictionary_service.dart';
+import '../services/japanese_dictionary_service.dart';
 
 class WordFormScreen extends ConsumerStatefulWidget {
   final Word? existing;
@@ -18,12 +20,14 @@ class WordFormScreen extends ConsumerStatefulWidget {
 class _WordFormScreenState extends ConsumerState<WordFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _dictionaryService = DictionaryService();
+  final _japaneseDictionaryService = JapaneseDictionaryService();
   late final TextEditingController _englishController;
   late final TextEditingController _japaneseController;
   late final TextEditingController _exampleController;
 
   PartOfSpeech? _selectedPos;
   String? _audioUrl;
+  String? _japaneseReading;
   bool _isLookingUp = false;
 
   @override
@@ -39,10 +43,23 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
         ? mapToPartOfSpeech(existing!.partOfSpeech!)
         : null;
     _audioUrl = existing?.audioUrl;
+    _japaneseReading = existing?.japaneseReading;
+    _japaneseController.addListener(_invalidateReadingOnManualEdit);
+  }
+
+  /// The stored reading only applies to the exact text it was looked up
+  /// for — if the user edits the Japanese field by hand afterward (rather
+  /// than via a fresh lookup), the reading would silently go stale, so
+  /// drop it as soon as the text changes non-programmatically.
+  void _invalidateReadingOnManualEdit() {
+    if (_japaneseReading != null) {
+      _japaneseReading = null;
+    }
   }
 
   @override
   void dispose() {
+    _japaneseController.removeListener(_invalidateReadingOnManualEdit);
     _englishController.dispose();
     _japaneseController.dispose();
     _exampleController.dispose();
@@ -76,21 +93,90 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     }
 
     if (result.senses.length == 1) {
-      final sense = result.senses.first;
-      setState(() {
-        _selectedPos ??= sense.partOfSpeech;
-        if (_exampleController.text.trim().isEmpty && sense.example != null) {
-          _exampleController.text = sense.example!;
-        }
-      });
+      _applySense(result.senses.first, isEnTarget: true, overwritePos: false);
       return;
     }
 
     if (!mounted) return;
-    await _pickSense(result.senses);
+    await _pickSense(result.senses, isEnTarget: true);
   }
 
-  Future<void> _pickSense(List<DictionarySense> senses) async {
+  Future<void> _lookupJapaneseDictionary() async {
+    final l10n = AppLocalizations.of(context)!;
+    final word = _japaneseController.text.trim();
+    if (word.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.enterJapaneseFirst)));
+      return;
+    }
+
+    setState(() => _isLookingUp = true);
+    final result = await _japaneseDictionaryService.lookup(word);
+    if (!mounted) return;
+    setState(() => _isLookingUp = false);
+
+    if (result == null || result.senses.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.dictionaryLookupFailed)));
+      return;
+    }
+
+    // The reading applies to whatever text was just looked up — captured
+    // here rather than left to the field-change listener, since this
+    // lookup reads (not writes) the Japanese field.
+    if (result.reading != null) {
+      _japaneseReading = result.reading;
+    }
+
+    if (result.senses.length == 1) {
+      _applySense(
+        result.senses.first,
+        isEnTarget: false,
+        overwritePos: false,
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    await _pickSense(result.senses, isEnTarget: false);
+  }
+
+  /// Fills in the part-of-speech and example/meaning from a dictionary
+  /// sense. [overwritePos] is true when the user explicitly picked this
+  /// sense from a list (their choice should win), false when it's the only
+  /// candidate and was applied automatically (a guess — shouldn't clobber a
+  /// part of speech the user already picked by hand). The example/meaning
+  /// fields are only filled if still empty either way, so a lookup never
+  /// clobbers something the user already typed there.
+  void _applySense(
+    DictionarySense sense, {
+    required bool isEnTarget,
+    required bool overwritePos,
+  }) {
+    setState(() {
+      if (overwritePos) {
+        _selectedPos = sense.partOfSpeech;
+      } else {
+        _selectedPos ??= sense.partOfSpeech;
+      }
+      if (_exampleController.text.trim().isEmpty && sense.example != null) {
+        _exampleController.text = sense.example!;
+      }
+      final meaningController = isEnTarget
+          ? _japaneseController
+          : _englishController;
+      if (meaningController.text.trim().isEmpty && sense.meaning != null) {
+        meaningController.text = sense.meaning!;
+      }
+    });
+  }
+
+  Future<void> _pickSense(
+    List<DictionarySense> senses, {
+    required bool isEnTarget,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
     final chosen = await showModalBottomSheet<DictionarySense>(
       context: context,
@@ -108,7 +194,9 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
             ...senses.map(
               (sense) => ListTile(
                 title: Text(sense.partOfSpeech.displayLabel(l10n)),
-                subtitle: sense.example != null ? Text(sense.example!) : null,
+                subtitle: sense.example != null || sense.meaning != null
+                    ? Text(sense.meaning ?? sense.example!)
+                    : null,
                 onTap: () => Navigator.of(context).pop(sense),
               ),
             ),
@@ -119,12 +207,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     );
 
     if (chosen == null || !mounted) return;
-    setState(() {
-      _selectedPos = chosen.partOfSpeech;
-      if (chosen.example != null) {
-        _exampleController.text = chosen.example!;
-      }
-    });
+    _applySense(chosen, isEnTarget: isEnTarget, overwritePos: true);
   }
 
   Future<void> _save() async {
@@ -132,6 +215,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     final repository = ref.read(wordRepositoryProvider);
+    final learningMode = ref.read(learningModeProvider);
     final existing = widget.existing;
     final english = _englishController.text.trim();
     final japanese = _emptyToNull(_japaneseController.text);
@@ -143,6 +227,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
       japanese: japanese,
       partOfSpeech: partOfSpeech,
       excludingId: existing?.id,
+      learningDirection: learningMode,
     );
     if (duplicate != null) {
       if (!mounted) return;
@@ -168,6 +253,10 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
       return;
     }
 
+    // The reading is only valid if it still matches the current text (the
+    // manual-edit listener clears it otherwise).
+    final japaneseReading = japanese != null ? _japaneseReading : null;
+
     if (existing == null) {
       await repository.addWord(
         english: english,
@@ -175,6 +264,8 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
         exampleSentence: example,
         partOfSpeech: partOfSpeech,
         audioUrl: _audioUrl,
+        japaneseReading: japaneseReading,
+        learningDirection: learningMode,
       );
     } else {
       await repository.updateWord(
@@ -184,6 +275,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
         exampleSentence: example,
         partOfSpeech: partOfSpeech,
         audioUrl: _audioUrl,
+        japaneseReading: japaneseReading,
       );
     }
 
@@ -228,6 +320,8 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.existing != null;
     final l10n = AppLocalizations.of(context)!;
+    final isEnTarget =
+        ref.watch(learningModeProvider) == LearningDirection.enTarget;
 
     return Scaffold(
       appBar: AppBar(
@@ -260,49 +354,111 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
                         : null,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: _isLookingUp
-                      ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                // Dictionary auto-fill is English-only for now (see
+                // dictionary_service.dart) — hidden in Japanese-learning
+                // mode until a Japanese equivalent exists.
+                if (isEnTarget) ...[
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: _isLookingUp
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : IconButton.filledTonal(
+                            onPressed: _lookupDictionary,
+                            tooltip: l10n.dictionaryLookupTooltip,
+                            icon: const Icon(Icons.auto_fix_high),
                           ),
-                        )
-                      : IconButton.filledTonal(
-                          onPressed: _lookupDictionary,
-                          tooltip: l10n.dictionaryLookupTooltip,
-                          icon: const Icon(Icons.auto_fix_high),
-                        ),
-                ),
-                const SizedBox(width: 4),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: IconButton(
-                    onPressed: () {
-                      final english = _englishController.text.trim();
-                      if (english.isEmpty) return;
-                      ref
-                          .read(pronunciationServiceProvider)
-                          .speak(
-                            english,
-                            audioUrl: _audioUrl,
-                            volume: ref.read(voiceVolumeProvider),
-                          );
-                    },
-                    tooltip: l10n.playPronunciationTooltip,
-                    icon: const Icon(Icons.volume_up_outlined),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: IconButton(
+                      onPressed: () {
+                        final english = _englishController.text.trim();
+                        if (english.isEmpty) return;
+                        ref
+                            .read(pronunciationServiceProvider)
+                            .speak(
+                              english,
+                              audioUrl: _audioUrl,
+                              volume: ref.read(voiceVolumeProvider),
+                              languageCode: 'en-US',
+                            );
+                      },
+                      tooltip: l10n.playPronunciationTooltip,
+                      icon: const Icon(Icons.volume_up_outlined),
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _japaneseController,
-              decoration: InputDecoration(labelText: l10n.japaneseFieldLabel),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _japaneseController,
+                    decoration: InputDecoration(
+                      labelText: l10n.japaneseFieldLabel,
+                    ),
+                    // enTarget allows a "quick add" with the meaning filled
+                    // in later; jaTarget has no such flow since `english`
+                    // (the meaning, in that mode) is a NOT NULL DB column.
+                    validator: isEnTarget
+                        ? null
+                        : (value) => (value == null || value.trim().isEmpty)
+                        ? l10n.requiredField
+                        : null,
+                  ),
+                ),
+                if (!isEnTarget) ...[
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: _isLookingUp
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : IconButton.filledTonal(
+                            onPressed: _lookupJapaneseDictionary,
+                            tooltip: l10n.dictionaryLookupTooltip,
+                            icon: const Icon(Icons.auto_fix_high),
+                          ),
+                  ),
+                  const SizedBox(width: 4),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: IconButton(
+                      onPressed: () {
+                        final japanese = _japaneseController.text.trim();
+                        if (japanese.isEmpty) return;
+                        ref
+                            .read(pronunciationServiceProvider)
+                            .speak(
+                              _japaneseReading ?? japanese,
+                              volume: ref.read(voiceVolumeProvider),
+                              languageCode: 'ja-JP',
+                            );
+                      },
+                      tooltip: l10n.playPronunciationTooltip,
+                      icon: const Icon(Icons.volume_up_outlined),
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -316,8 +472,10 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
               decoration: InputDecoration(labelText: l10n.posFieldLabel),
               items: PartOfSpeech.values
                   .map(
-                    (pos) =>
-                        DropdownMenuItem(value: pos, child: Text(pos.label)),
+                    (pos) => DropdownMenuItem(
+                      value: pos,
+                      child: Text(pos.displayLabel(l10n)),
+                    ),
                   )
                   .toList(),
               onChanged: (pos) => setState(() => _selectedPos = pos),

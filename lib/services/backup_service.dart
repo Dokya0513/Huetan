@@ -83,6 +83,8 @@ class BackupService {
     'lastReviewedAt': w.lastReviewedAt?.toIso8601String(),
     'audioUrl': w.audioUrl,
     'nextReviewDate': w.nextReviewDate?.toIso8601String(),
+    'learningDirection': w.learningDirection,
+    'japaneseReading': w.japaneseReading,
   };
 
   WordsCompanion _wordFromJson(Map<String, dynamic> j) => WordsCompanion(
@@ -104,6 +106,10 @@ class BackupService {
           ? null
           : DateTime.parse(j['nextReviewDate'] as String),
     ),
+    // Older backups (pre-learning-mode) won't have this key — default to
+    // enTarget, matching the schema column's own default for the same case.
+    learningDirection: Value(j['learningDirection'] as String? ?? 'enTarget'),
+    japaneseReading: Value(j['japaneseReading'] as String?),
   );
 
   Map<String, dynamic> _reviewLogToJson(ReviewLog r) => {

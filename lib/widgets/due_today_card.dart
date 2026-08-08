@@ -16,7 +16,10 @@ class DueTodayCard extends ConsumerWidget {
   Future<void> _start(BuildContext context, WidgetRef ref) async {
     final words = await ref
         .read(wordRepositoryProvider)
-        .selectSessionWords(dueOnly: true);
+        .selectSessionWords(
+          direction: ref.read(learningModeProvider),
+          dueOnly: true,
+        );
     if (words.isEmpty || !context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(

@@ -91,6 +91,7 @@
   "importFailureSnackbar": "Import failed: {error}",
 
   "enterEnglishFirst": "Enter an English word first",
+  "enterJapaneseFirst": "Enter a Japanese word first",
   "dictionaryLookupFailed": "Couldn't fetch information from the dictionary",
   "multipleSensesPrompt": "This word has multiple parts of speech. Which meaning would you like to register?",
   "alreadyRegisteredTitle": "Already registered",
@@ -227,5 +228,21 @@
   "badgeCorrect1Title": "First Correct Answer",
   "badgeCorrect1Description": "Got a flashcard answer right",
   "badgeCorrect100Title": "Battle-Tested",
-  "badgeCorrect100Description": "100 correct answers total"
+  "badgeCorrect100Description": "100 correct answers total",
+
+  "settingsLearningModeSectionHeader": "Learning Mode",
+  "settingsLearningModeLabel": "Learning Japanese",
+  "settingsLearningModeEnTargetDescription": "Record English words to learn (meanings in Japanese)",
+  "settingsLearningModeJaTargetDescription": "Record Japanese words to learn (meanings in English)",
+
+  "onboardingChooseModeTitle": "What are you learning?",
+  "onboardingChooseEnTargetLabel": "Learn English",
+  "onboardingChooseJaTargetLabel": "Learn Japanese",
+
+  "dashboardQuickAddJaHint": "Quickly add a Japanese word (add the meaning later)",
+
+  "settingsCreditsJlptText": "JLPT vocabulary data (jlpt-word-list, MIT)\nhttps://github.com/elzup/jlpt-word-list\nSource data: Jonathan Waller's JLPT Resources (tanos.co.uk), CC BY\nUsed to determine each word's JLPT level",
+  "settingsCreditsJmdictText": "JMdict/EDICT dictionary data\nElectronic Dictionary Research and Development Group (https://www.edrdg.org/)\nCC BY-SA 4.0, used via jmdict-simplified\nUsed for Japanese meaning/part-of-speech lookup",
+  "jlptFilterLabel": "Filter by JLPT level",
+  "jlptDistributionTitle": "By JLPT Level ({total} total)"
 }

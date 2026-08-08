@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/app_localizations.dart';
+import '../l10n/locale_utils.dart';
+import '../models/learning_direction.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import 'root_shell.dart';
@@ -57,10 +59,9 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  static const _pageCount = 5;
-
   final _controller = PageController();
   int _index = 0;
+  bool _modeChosen = false;
 
   @override
   void dispose() {
@@ -77,8 +78,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  void _next() {
-    if (_index == _pageCount - 1) {
+  Future<void> _chooseMode(LearningDirection mode) async {
+    await ref.read(learningModeProvider.notifier).setMode(mode);
+    if (mounted) setState(() => _modeChosen = true);
+  }
+
+  void _next(int pageCount) {
+    if (_index == pageCount - 1) {
       _finish();
       return;
     }
@@ -92,10 +98,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
+
+    if (!_modeChosen) {
+      return SystemLocaleOverride(
+        child: _ModeChoiceView(onChoose: _chooseMode),
+      );
+    }
+
     final pages = _buildPages(l10n);
     final isLast = _index == pages.length - 1;
 
-    return Scaffold(
+    return SystemLocaleOverride(
+      child: Scaffold(
       backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
@@ -169,7 +183,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _next,
+                  onPressed: () => _next(pages.length),
                   style: FilledButton.styleFrom(
                     backgroundColor: colors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -188,6 +202,91 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
           ],
+        ),
+      ),
+      ),
+    );
+  }
+}
+
+/// First screen shown on launch, before anything else — lets the user pick
+/// which language they're learning. Deliberately always bilingual (not
+/// routed through AppLocalizations) rather than following system locale:
+/// this is the one screen where "which language can you read" is exactly
+/// the question being asked, so picking a single language to ask it in
+/// would be circular — a reader of the *other* language couldn't
+/// understand the choice in front of them (see also the equivalent
+/// section in settings_screen.dart).
+class _ModeChoiceView extends StatelessWidget {
+  final void Function(LearningDirection mode) onChoose;
+  const _ModeChoiceView({required this.onChoose});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Scaffold(
+      backgroundColor: colors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '何を学びますか？\nWhat are you learning?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => onChoose(LearningDirection.enTarget),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '英語を学ぶ\nLearn English',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => onChoose(LearningDirection.jaTarget),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colors.secondary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '日本語を学ぶ\nLearn Japanese',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'あとで設定画面からいつでも変更できます\n'
+                'You can change this anytime in Settings',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: colors.textSecondary),
+              ),
+            ],
+          ),
         ),
       ),
     );

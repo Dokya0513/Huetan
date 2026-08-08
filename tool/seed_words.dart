@@ -115,6 +115,43 @@ const List<List<String>> words = [
   ['basis', '基礎'],
 ];
 
+// A handful of Japanese-target test words (learning_direction='jaTarget'),
+// mirroring the English list above but for manual testing of the
+// Japanese-learning mode. Stored as [japanese, english] pairs — japanese is
+// the target word, english is its meaning.
+const List<List<String>> japaneseWords = [
+  ['ありがとう', 'thank you'],
+  ['こんにちは', 'hello'],
+  ['さようなら', 'goodbye'],
+  ['おはよう', 'good morning'],
+  ['勉強', 'study'],
+  ['学校', 'school'],
+  ['友達', 'friend'],
+  ['家族', 'family'],
+  ['先生', 'teacher'],
+  ['学生', 'student'],
+  ['食べる', 'to eat'],
+  ['飲む', 'to drink'],
+  ['行く', 'to go'],
+  ['来る', 'to come'],
+  ['見る', 'to see/watch'],
+  ['聞く', 'to hear/ask'],
+  ['大きい', 'big'],
+  ['小さい', 'small'],
+  ['新しい', 'new'],
+  ['古い', 'old'],
+  ['楽しい', 'fun'],
+  ['難しい', 'difficult'],
+  ['天気', 'weather'],
+  ['時間', 'time'],
+  ['仕事', 'work/job'],
+  ['電車', 'train'],
+  ['病院', 'hospital'],
+  ['図書館', 'library'],
+  ['公園', 'park'],
+  ['料理', 'cooking'],
+];
+
 void main() {
   final dbPath = p.join(
     Platform.environment['USERPROFILE']!,
@@ -131,23 +168,39 @@ void main() {
 
   final db = sqlite3.open(dbPath);
   final stmt = db.prepare(
-    'INSERT INTO words (english, japanese, leitner_box, created_at) '
-    'VALUES (?, ?, 1, ?)',
+    'INSERT INTO words (english, japanese, leitner_box, created_at, learning_direction) '
+    'VALUES (?, ?, 1, ?, ?)',
   );
 
   var inserted = 0;
   final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   for (final pair in words) {
     final exists = db.select(
-      'SELECT id FROM words WHERE english = ?',
-      [pair[0]],
+      'SELECT id FROM words WHERE english = ? AND learning_direction = ?',
+      [pair[0], 'enTarget'],
     );
     if (exists.isNotEmpty) continue;
-    stmt.execute([pair[0], pair[1], now]);
+    stmt.execute([pair[0], pair[1], now, 'enTarget']);
     inserted++;
+  }
+
+  var insertedJa = 0;
+  for (final pair in japaneseWords) {
+    final exists = db.select(
+      'SELECT id FROM words WHERE japanese = ? AND learning_direction = ?',
+      [pair[0], 'jaTarget'],
+    );
+    if (exists.isNotEmpty) continue;
+    // english column holds the meaning, japanese column holds the target
+    // word, when learning_direction is jaTarget.
+    stmt.execute([pair[1], pair[0], now, 'jaTarget']);
+    insertedJa++;
   }
 
   stmt.dispose();
   db.dispose();
-  print('Inserted $inserted new word(s) (skipped duplicates).');
+  print(
+    'Inserted $inserted new English word(s) and $insertedJa new Japanese '
+    'word(s) (skipped duplicates).',
+  );
 }

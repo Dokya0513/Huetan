@@ -4,10 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database.dart';
 import '../l10n/app_localizations.dart';
 import '../models/cefr_level.dart';
+import '../models/jlpt_level.dart';
+import '../models/learning_direction.dart';
 import '../models/part_of_speech.dart';
+import '../models/word_display.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import '../theme/cefr_colors.dart';
+import '../theme/jlpt_colors.dart';
 import '../theme/pos_colors.dart';
 import '../widgets/app_logo.dart';
 import 'flashcard_setup_screen.dart';
@@ -51,9 +55,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
     if (_query.isNotEmpty) {
       result = result.where((w) {
-        if (w.english.toLowerCase().contains(_query)) return true;
-        final japanese = w.japanese;
-        return japanese != null && japanese.toLowerCase().contains(_query);
+        if (w.targetText.toLowerCase().contains(_query)) return true;
+        final meaning = w.meaningText;
+        return meaning != null && meaning.toLowerCase().contains(_query);
       }).toList();
     }
     return result;
@@ -69,7 +73,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         break; // allWordsProvider already orders by createdAt desc.
       case _SortMode.alphabetical:
         sorted.sort(
-          (a, b) => a.english.toLowerCase().compareTo(b.english.toLowerCase()),
+          (a, b) =>
+              a.targetText.toLowerCase().compareTo(b.targetText.toLowerCase()),
         );
       case _SortMode.weakness:
         sorted.sort((a, b) {
@@ -91,6 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final wordsAsync = ref.watch(allWordsProvider);
     final cefrWordlist = ref.watch(cefrWordlistProvider).value;
+    final jlptWordlist = ref.watch(jlptWordlistProvider).value;
     final colors = context.colors;
     final unsetColor = colors.textSecondary.withValues(alpha: 0.35);
     final l10n = AppLocalizations.of(context)!;
@@ -186,31 +192,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         separatorBuilder: (_, _) => const Divider(height: 1),
                         itemBuilder: (context, index) {
                           final word = sortedWords[index];
+                          final isEnTargetWord =
+                              word.direction == LearningDirection.enTarget;
                           final pos = word.partOfSpeech != null
                               ? mapToPartOfSpeech(word.partOfSpeech!)
                               : null;
-                          final cefr =
-                              cefrWordlist?[word.english.trim().toLowerCase()];
+                          // CEFR-J only classifies English words; JLPT
+                          // only classifies Japanese words.
+                          CefrLevel? cefr;
+                          JlptLevel? jlpt;
+                          final targetKey = word.targetText
+                              .trim()
+                              .toLowerCase();
+                          if (isEnTargetWord) {
+                            cefr = cefrWordlist?[targetKey];
+                          } else {
+                            jlpt = jlptWordlist?[targetKey];
+                          }
+                          final meaning = word.meaningText;
                           return ListTile(
                             title: Text(
-                              word.english,
-                              style: const TextStyle(
-                                fontFamily: englishDisplayFontFamily,
+                              word.targetText,
+                              style: TextStyle(
+                                fontFamily: isEnTargetWord
+                                    ? englishDisplayFontFamily
+                                    : null,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                word.japanese != null
-                                    ? Text(word.japanese!)
+                                meaning != null
+                                    ? Text(meaning)
                                     : Text(
                                         l10n.noTranslationYet,
                                         style: const TextStyle(
                                           fontStyle: FontStyle.italic,
                                         ),
                                       ),
-                                if (pos != null || cefr != null)
+                                if (pos != null || cefr != null || jlpt != null)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 6),
                                     child: Wrap(
@@ -225,6 +246,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           ),
                                         if (cefr != null)
                                           _CefrPill(level: cefr),
+                                        if (jlpt != null)
+                                          _JlptPill(level: jlpt),
                                       ],
                                     ),
                                   ),
@@ -239,16 +262,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   onPressed: () => ref
                                       .read(pronunciationServiceProvider)
                                       .speak(
-                                        word.english,
+                                        word.speechText,
                                         audioUrl: word.audioUrl,
                                         volume: ref.read(voiceVolumeProvider),
+                                        languageCode: isEnTargetWord
+                                            ? 'en-US'
+                                            : 'ja-JP',
                                       ),
                                 ),
                                 const SizedBox(width: 6),
                                 _BoxBadge(
                                   box: word.leitnerBox,
                                   isReviewed: word.lastReviewedAt != null,
-                                  hasTranslation: word.japanese != null,
+                                  hasTranslation: meaning != null,
                                 ),
                               ],
                             ),
@@ -321,6 +347,31 @@ class _CefrPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = cefrColors[level]!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: color, width: 1.5),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        level.label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _JlptPill extends StatelessWidget {
+  final JlptLevel level;
+  const _JlptPill({required this.level});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = jlptColors[level]!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(

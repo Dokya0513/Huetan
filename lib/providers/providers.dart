@@ -4,13 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database.dart';
 import '../models/cefr_level.dart';
 import '../models/character_advice.dart';
+import '../models/jlpt_level.dart';
+import '../models/learning_direction.dart';
 import '../models/part_of_speech.dart';
+import '../models/word_display.dart';
 import '../repositories/activity_repository.dart';
 import '../repositories/stats_repository.dart';
 import '../repositories/word_repository.dart';
 import '../services/backup_service.dart';
 import '../services/badge_unlock_service.dart';
 import '../services/cefr_service.dart';
+import '../services/jlpt_service.dart';
 import '../services/pronunciation_service.dart';
 import '../services/settings_service.dart';
 import '../services/sound_service.dart';
@@ -30,15 +34,21 @@ final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
 });
 
 final allWordsProvider = StreamProvider<List<Word>>((ref) {
-  return ref.watch(wordRepositoryProvider).watchAllWords();
+  return ref
+      .watch(wordRepositoryProvider)
+      .watchAllWords(direction: ref.watch(learningModeProvider));
 });
 
 final weakWordsProvider = StreamProvider<List<Word>>((ref) {
-  return ref.watch(wordRepositoryProvider).watchWeakWords();
+  return ref
+      .watch(wordRepositoryProvider)
+      .watchWeakWords(direction: ref.watch(learningModeProvider));
 });
 
 final dueWordsProvider = StreamProvider<List<Word>>((ref) {
-  return ref.watch(wordRepositoryProvider).watchDueWords();
+  return ref
+      .watch(wordRepositoryProvider)
+      .watchDueWords(direction: ref.watch(learningModeProvider));
 });
 
 final activityLogsProvider = StreamProvider<List<ActivityLog>>((ref) {
@@ -78,8 +88,13 @@ final dailyActivityCountsProvider = Provider<List<DailyActivityCount>>((ref) {
     addedByDay[day] = (addedByDay[day] ?? 0) + 1;
   }
 
+  // `words` is already scoped to the current learning mode; restrict the
+  // (mode-agnostic) review logs to just those words' ids so a review of a
+  // word from the other mode doesn't get counted here.
+  final modeWordIds = words.map((w) => w.id).toSet();
   final reviewedByDay = <DateTime, Set<int>>{};
   for (final log in reviewLogs) {
+    if (!modeWordIds.contains(log.wordId)) continue;
     final day = dateOnly(log.reviewedAt);
     reviewedByDay.putIfAbsent(day, () => {}).add(log.wordId);
   }
@@ -111,7 +126,9 @@ final statsRepositoryProvider = Provider<StatsRepository>((ref) {
 });
 
 final xpProvider = StreamProvider<int>((ref) {
-  return ref.watch(statsRepositoryProvider).watchXp();
+  return ref
+      .watch(statsRepositoryProvider)
+      .watchXp(direction: ref.watch(learningModeProvider));
 });
 
 final levelInfoProvider = Provider<LevelInfo>((ref) {
@@ -181,6 +198,39 @@ final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((
   ref,
 ) {
   return ThemeModeNotifier(ref.watch(settingsServiceProvider));
+});
+
+class LearningModeNotifier extends StateNotifier<LearningDirection> {
+  final SettingsService _settingsService;
+  LearningModeNotifier(this._settingsService)
+    : super(LearningDirection.enTarget) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    state = await _settingsService.loadLearningMode();
+  }
+
+  Future<void> setMode(LearningDirection mode) async {
+    state = mode;
+    await _settingsService.saveLearningMode(mode);
+  }
+}
+
+final learningModeProvider =
+    StateNotifierProvider<LearningModeNotifier, LearningDirection>((ref) {
+      return LearningModeNotifier(ref.watch(settingsServiceProvider));
+    });
+
+/// Locale forced by the current learning mode: enTarget (JP speaker
+/// learning English) forces Japanese UI, jaTarget (EN speaker learning
+/// Japanese) forces English UI. Settings/Onboarding override this locally
+/// back to the system locale — see lib/l10n/locale_utils.dart.
+final effectiveLocaleProvider = Provider<Locale>((ref) {
+  final mode = ref.watch(learningModeProvider);
+  return mode == LearningDirection.enTarget
+      ? const Locale('ja')
+      : const Locale('en');
 });
 
 final characterAdviceCandidatesProvider = Provider<List<CharacterAdvice>>((
@@ -375,6 +425,12 @@ class CefrCount {
 }
 
 final cefrDistributionProvider = Provider<List<CefrCount>>((ref) {
+  // CEFR-J only classifies English words; a jaTarget-mode word list has
+  // nothing meaningful to show here until a JLPT-based sibling provider
+  // exists (see jlptDistributionProvider, not yet implemented).
+  if (ref.watch(learningModeProvider) != LearningDirection.enTarget) {
+    return const [];
+  }
   final words = ref.watch(allWordsProvider).value ?? [];
   final wordlist = ref.watch(cefrWordlistProvider).value;
   if (wordlist == null || words.isEmpty) return const [];
@@ -396,6 +452,51 @@ final cefrDistributionProvider = Provider<List<CefrCount>>((ref) {
   ];
   if (outOfScope > 0) {
     list.add(CefrCount(null, outOfScope));
+  }
+  return list;
+});
+
+final jlptServiceProvider = Provider<JlptService>((ref) {
+  return JlptService();
+});
+
+final jlptWordlistProvider = FutureProvider<Map<String, JlptLevel>>((ref) {
+  return ref.watch(jlptServiceProvider).loadWordlist();
+});
+
+class JlptCount {
+  final JlptLevel? level;
+  final int count;
+  const JlptCount(this.level, this.count);
+}
+
+final jlptDistributionProvider = Provider<List<JlptCount>>((ref) {
+  // JLPT only classifies Japanese words; an enTarget-mode word list has
+  // nothing meaningful to show here (see cefrDistributionProvider above).
+  if (ref.watch(learningModeProvider) != LearningDirection.jaTarget) {
+    return const [];
+  }
+  final words = ref.watch(allWordsProvider).value ?? [];
+  final wordlist = ref.watch(jlptWordlistProvider).value;
+  if (wordlist == null || words.isEmpty) return const [];
+
+  final counts = <JlptLevel, int>{};
+  var outOfScope = 0;
+  for (final word in words) {
+    final level = wordlist[word.targetText.trim().toLowerCase()];
+    if (level == null) {
+      outOfScope++;
+      continue;
+    }
+    counts[level] = (counts[level] ?? 0) + 1;
+  }
+
+  final list = [
+    for (final level in JlptLevel.values)
+      if (counts[level] != null) JlptCount(level, counts[level]!),
+  ];
+  if (outOfScope > 0) {
+    list.add(JlptCount(null, outOfScope));
   }
   return list;
 });

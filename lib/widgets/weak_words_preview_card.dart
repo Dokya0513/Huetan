@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/learning_direction.dart';
+import '../models/word_display.dart';
 import '../providers/providers.dart';
 import '../screens/home_screen.dart';
 import '../theme/app_theme.dart';
@@ -76,17 +78,19 @@ class WeakWordsPreviewCard extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      word.english,
+                      word.targetText,
                       style: TextStyle(
-                        fontFamily: englishDisplayFontFamily,
+                        fontFamily: word.direction == LearningDirection.enTarget
+                            ? englishDisplayFontFamily
+                            : null,
                         fontWeight: FontWeight.w700,
                         color: colors.textPrimary,
                       ),
                     ),
                   ),
-                  if (word.japanese != null)
+                  if (word.meaningText != null)
                     Text(
-                      word.japanese!,
+                      word.meaningText!,
                       style: TextStyle(
                         fontSize: 12,
                         color: colors.textSecondary,

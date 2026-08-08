@@ -38,6 +38,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         ...GlobalMaterialLocalizations.delegates,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
+      locale: ref.watch(effectiveLocaleProvider),
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(Brightness.light),
       darkTheme: buildAppTheme(Brightness.dark),

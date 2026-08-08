@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
 import '../l10n/app_localizations.dart';
+import '../models/learning_direction.dart';
+import '../models/word_display.dart';
 import '../providers/providers.dart';
 import '../repositories/activity_repository.dart';
 import '../repositories/word_repository.dart';
@@ -166,9 +168,12 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
     void speak() => ref
         .read(pronunciationServiceProvider)
         .speak(
-          card.word.english,
+          card.word.speechText,
           audioUrl: card.word.audioUrl,
           volume: ref.read(voiceVolumeProvider),
+          languageCode: card.word.direction == LearningDirection.enTarget
+              ? 'en-US'
+              : 'ja-JP',
         );
 
     return Scaffold(

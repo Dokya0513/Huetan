@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -62,6 +62,22 @@ class AppDatabase extends _$AppDatabase {
         // The tag system (WordTags) has been replaced by the fixed
         // partOfSpeech categories — drop the now-unused table.
         await m.database.customStatement('DROP TABLE IF EXISTS word_tags');
+      }
+      if (from >= 3 && from < 6) {
+        // Adds the English-learning/Japanese-learning mode tag. Existing
+        // rows all predate this feature, so they default to 'enTarget'.
+        // Guarded to from >= 3: upgrades starting below v3 already get this
+        // column for free, since the `from < 3` branch above recreates
+        // `words` via createTable() using the *current* (v6) table
+        // definition — adding it again here would be a duplicate column.
+        await m.addColumn(words, words.learningDirection);
+      }
+      if (from >= 3 && from < 7) {
+        // Adds the kana reading captured from a JMdict lookup, used for
+        // TTS instead of raw kanji (see japaneseReading doc comment).
+        // Same from>=3 guard as learningDirection above, for the same
+        // reason (the `from < 3` branch already gets this column for free).
+        await m.addColumn(words, words.japaneseReading);
       }
     },
   );

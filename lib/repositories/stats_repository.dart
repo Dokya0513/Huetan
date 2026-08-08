@@ -1,7 +1,9 @@
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
 import '../l10n/app_localizations.dart';
+import '../models/learning_direction.dart';
 
 const int xpPerCorrectAnswer = 10;
 const int xpPerLevel = 100;
@@ -12,10 +14,19 @@ class StatsRepository {
   final AppDatabase db;
   StatsRepository(this.db);
 
-  Stream<int> watchXp() {
-    return (db.select(db.reviewLogs)..where((t) => t.isCorrect.equals(true)))
-        .watch()
-        .map((rows) => rows.length * xpPerCorrectAnswer);
+  /// Joins through to Words rather than duplicating the mode tag onto
+  /// ReviewLogs — learningDirection is immutable per word, so the join is
+  /// always exact and needs no backfill.
+  Stream<int> watchXp({required LearningDirection direction}) {
+    final query =
+        db.select(db.reviewLogs).join([
+            innerJoin(db.words, db.words.id.equalsExp(db.reviewLogs.wordId)),
+          ])
+          ..where(
+            db.reviewLogs.isCorrect.equals(true) &
+                db.words.learningDirection.equals(direction.dbValue),
+          );
+    return query.watch().map((rows) => rows.length * xpPerCorrectAnswer);
   }
 }
 

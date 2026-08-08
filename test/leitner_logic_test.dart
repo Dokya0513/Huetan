@@ -4,6 +4,7 @@
 // scheduling wrong without any visible error.
 import 'package:drift/native.dart';
 import 'package:english_learning/data/database.dart';
+import 'package:english_learning/models/learning_direction.dart';
 import 'package:english_learning/repositories/word_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -23,7 +24,11 @@ void main() {
 
   group('recordAnswer — box progression', () {
     test('correct answer advances the box by 1', () async {
-      final id = await repository.addWord(english: 'apple', japanese: 'りんご');
+      final id = await repository.addWord(
+        english: 'apple',
+        japanese: 'りんご',
+        learningDirection: LearningDirection.enTarget,
+      );
 
       await repository.recordAnswer(
         wordId: id,
@@ -37,7 +42,11 @@ void main() {
     });
 
     test('correct answer never exceeds the max box', () async {
-      final id = await repository.addWord(english: 'apple', japanese: 'りんご');
+      final id = await repository.addWord(
+        english: 'apple',
+        japanese: 'りんご',
+        learningDirection: LearningDirection.enTarget,
+      );
 
       for (var i = 0; i < 10; i++) {
         await repository.recordAnswer(
@@ -54,7 +63,11 @@ void main() {
     test(
       'incorrect answer resets the box to 1 regardless of progress',
       () async {
-        final id = await repository.addWord(english: 'apple', japanese: 'りんご');
+        final id = await repository.addWord(
+        english: 'apple',
+        japanese: 'りんご',
+        learningDirection: LearningDirection.enTarget,
+      );
         for (var i = 0; i < 3; i++) {
           await repository.recordAnswer(
             wordId: id,
@@ -75,7 +88,11 @@ void main() {
     );
 
     test('nextReviewDate matches the interval for the new box', () async {
-      final id = await repository.addWord(english: 'apple', japanese: 'りんご');
+      final id = await repository.addWord(
+        english: 'apple',
+        japanese: 'りんご',
+        learningDirection: LearningDirection.enTarget,
+      );
 
       await repository.recordAnswer(
         wordId: id,
@@ -93,7 +110,11 @@ void main() {
     });
 
     test('records a ReviewLog entry for every answer', () async {
-      final id = await repository.addWord(english: 'apple', japanese: 'りんご');
+      final id = await repository.addWord(
+        english: 'apple',
+        japanese: 'りんご',
+        learningDirection: LearningDirection.enTarget,
+      );
 
       await repository.recordAnswer(
         wordId: id,
@@ -115,12 +136,14 @@ void main() {
         english: 'play',
         japanese: '遊ぶ',
         partOfSpeech: '動詞',
+        learningDirection: LearningDirection.enTarget,
       );
 
       final duplicate = await repository.findExactDuplicate(
         english: 'PLAY', // case-insensitive
         japanese: '遊ぶ',
         partOfSpeech: '動詞',
+        learningDirection: LearningDirection.enTarget,
       );
 
       expect(duplicate, isNotNull);
@@ -131,12 +154,14 @@ void main() {
         english: 'play',
         japanese: '遊ぶ',
         partOfSpeech: '動詞',
+        learningDirection: LearningDirection.enTarget,
       );
 
       final duplicate = await repository.findExactDuplicate(
         english: 'play',
         japanese: '芝居',
         partOfSpeech: '名詞',
+        learningDirection: LearningDirection.enTarget,
       );
 
       expect(duplicate, isNull);
@@ -149,6 +174,7 @@ void main() {
           english: 'play',
           japanese: '遊ぶ',
           partOfSpeech: '動詞',
+          learningDirection: LearningDirection.enTarget,
         );
 
         final duplicate = await repository.findExactDuplicate(
@@ -156,6 +182,7 @@ void main() {
           japanese: '遊ぶ',
           partOfSpeech: '動詞',
           excludingId: id,
+          learningDirection: LearningDirection.enTarget,
         );
 
         expect(duplicate, isNull);
@@ -165,14 +192,25 @@ void main() {
 
   group('due words', () {
     test('a never-reviewed word counts as due', () async {
-      await repository.addWord(english: 'apple', japanese: 'りんご');
+      await repository.addWord(
+        english: 'apple',
+        japanese: 'りんご',
+        learningDirection: LearningDirection.enTarget,
+      );
 
-      final due = await repository.selectSessionWords(dueOnly: true);
+      final due = await repository.selectSessionWords(
+        direction: LearningDirection.enTarget,
+        dueOnly: true,
+      );
       expect(due, hasLength(1));
     });
 
     test('a word not due until the future is excluded', () async {
-      final id = await repository.addWord(english: 'apple', japanese: 'りんご');
+      final id = await repository.addWord(
+        english: 'apple',
+        japanese: 'りんご',
+        learningDirection: LearningDirection.enTarget,
+      );
       // Answering correctly pushes nextReviewDate into the future.
       await repository.recordAnswer(
         wordId: id,
@@ -180,7 +218,10 @@ void main() {
         isCorrect: true,
       );
 
-      final due = await repository.selectSessionWords(dueOnly: true);
+      final due = await repository.selectSessionWords(
+        direction: LearningDirection.enTarget,
+        dueOnly: true,
+      );
       expect(due, isEmpty);
     });
   });

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launcher name shown on the home screen — follows the DEVICE's OS
+         locale (Android resolves this before the app even starts, so it
+         can't use the in-app learning-mode-driven locale). A Japanese
+         device sees "ふえたん" (values-ja/strings.xml); everything else
+         falls back to this English name. -->
+    <string name="app_name">Fuetan</string>
+</resources>

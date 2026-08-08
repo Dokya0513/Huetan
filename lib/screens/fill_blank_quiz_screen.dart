@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database.dart';
 import '../l10n/app_localizations.dart';
 import '../models/fill_blank.dart';
+import '../models/learning_direction.dart';
+import '../models/word_display.dart';
 import '../providers/providers.dart';
 import '../repositories/activity_repository.dart';
 import '../repositories/word_repository.dart';
@@ -47,11 +49,14 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
     super.initState();
     final rand = Random();
     _questions = widget.words.map((word) {
-      final blanked = blankOutWord(word.english, word.exampleSentence!);
+      final blanked = blankOutWord(word.targetText, word.exampleSentence!);
 
       final others = widget.words
           .where((w) => w.id != word.id)
-          .where((w) => w.english.toLowerCase() != word.english.toLowerCase())
+          .where(
+            (w) =>
+                w.targetText.toLowerCase() != word.targetText.toLowerCase(),
+          )
           .toList();
       // Prefer distractors of the same part of speech for a bit of a
       // challenge, falling back to any other word if there aren't enough.
@@ -63,12 +68,12 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
         final shuffled = List.of(pool)..shuffle(rand);
         for (final w in shuffled) {
           if (distractors.length >= 3) break;
-          distractors.add(w.english);
+          distractors.add(w.targetText);
         }
         if (distractors.length >= 3) break;
       }
 
-      final choices = [word.english, ...distractors]..shuffle(rand);
+      final choices = [word.targetText, ...distractors]..shuffle(rand);
       return _Question(word, blanked, choices);
     }).toList();
   }
@@ -77,7 +82,7 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
     if (_answered) return;
     final question = _questions[_index];
     final isCorrect =
-        choice.toLowerCase() == question.word.english.toLowerCase();
+        choice.toLowerCase() == question.word.targetText.toLowerCase();
 
     setState(() {
       _selectedChoice = choice;
@@ -131,6 +136,8 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
   Widget build(BuildContext context) {
     final question = _questions[_index];
     final l10n = AppLocalizations.of(context)!;
+    final isEnTargetQuestion =
+        question.word.direction == LearningDirection.enTarget;
 
     return Scaffold(
       appBar: AppBar(title: Text('${_index + 1} / ${_questions.length}')),
@@ -149,7 +156,11 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
                     child: Text(
                       question.blankedSentence,
                       style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontFamily: englishDisplayFontFamily),
+                          ?.copyWith(
+                            fontFamily: isEnTargetQuestion
+                                ? englishDisplayFontFamily
+                                : null,
+                          ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -165,9 +176,10 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
                   isSelected: choice == _selectedChoice,
                   isCorrectChoice:
                       choice.toLowerCase() ==
-                      question.word.english.toLowerCase(),
+                      question.word.targetText.toLowerCase(),
                   answered: _answered,
                   onTap: _answered ? null : () => _selectChoice(choice),
+                  isEnglish: isEnTargetQuestion,
                 ),
               ),
             if (_answered)

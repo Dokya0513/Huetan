@@ -16,6 +16,16 @@ class Words extends Table {
   TextColumn get audioUrl => text().nullable()();
   // Next scheduled review date for the spaced-repetition "due today" queue.
   DateTimeColumn get nextReviewDate => dateTime().nullable()();
+  // Which language this word targets ('enTarget'/'jaTarget', see
+  // LearningDirection) — stamped at creation, never changed afterward.
+  TextColumn get learningDirection =>
+      text().withDefault(const Constant('enTarget'))();
+  // Kana reading for a jaTarget word's kanji spelling, from the JMdict
+  // lookup — used for TTS instead of the raw kanji, since Japanese TTS
+  // engines frequently mispronounce kanji with multiple valid readings
+  // (e.g. 来る as "kitaru" instead of "kuru") without it. Null for words
+  // entered without a dictionary lookup, or for enTarget words.
+  TextColumn get japaneseReading => text().nullable()();
 }
 
 class ReviewLogs extends Table {

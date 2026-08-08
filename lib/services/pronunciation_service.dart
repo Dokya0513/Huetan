@@ -17,7 +17,7 @@ import 'package:path_provider/path_provider.dart';
 class PronunciationService {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final FlutterTts _tts = FlutterTts();
-  bool _ttsConfigured = false;
+  String? _configuredLanguage;
   Directory? _cacheDir;
 
   // Tracked locally instead of querying the player/TTS engine every call —
@@ -79,26 +79,29 @@ class PronunciationService {
     }
   }
 
-  Future<void> _ensureTtsConfigured() async {
-    if (_ttsConfigured) return;
-    await _tts.setLanguage('en-US');
+  /// [languageCode] is a full locale like 'en-US' or 'ja-JP'; only its
+  /// language subtag (before the '-') is used for voice matching.
+  Future<void> _ensureTtsConfigured(String languageCode) async {
+    if (_configuredLanguage == languageCode) return;
+    await _tts.setLanguage(languageCode);
 
     // setLanguage alone isn't always enough on Windows/SAPI: if no voice is
     // installed for that language, the engine silently keeps using the
     // system default voice (e.g. Japanese on a ja-JP machine). Explicitly
-    // pick an installed English voice when one exists.
+    // pick an installed voice for the requested language when one exists.
     try {
+      final languagePrefix = languageCode.split('-').first.toLowerCase();
       final voices = await _tts.getVoices;
       if (voices is List) {
-        final englishVoice = voices.cast<Object?>().firstWhere((voice) {
+        final matchingVoice = voices.cast<Object?>().firstWhere((voice) {
           if (voice is! Map) return false;
           final locale = voice['locale']?.toString().toLowerCase() ?? '';
-          return locale.startsWith('en');
+          return locale.startsWith(languagePrefix);
         }, orElse: () => null);
-        if (englishVoice is Map) {
+        if (matchingVoice is Map) {
           await _tts.setVoice({
-            'name': englishVoice['name'].toString(),
-            'locale': englishVoice['locale'].toString(),
+            'name': matchingVoice['name'].toString(),
+            'locale': matchingVoice['locale'].toString(),
           });
         }
       }
@@ -106,13 +109,18 @@ class PronunciationService {
       // Voice enumeration isn't supported on every platform; ignore.
     }
 
-    _ttsConfigured = true;
+    _configuredLanguage = languageCode;
   }
 
+  /// Speaks [text]. [languageCode] selects the TTS voice/fallback language
+  /// ('en-US' for English-target words, 'ja-JP' for Japanese-target words)
+  /// — only used when falling back to TTS; [audioUrl], when given, is
+  /// always in whatever language the dictionary provided it in.
   Future<void> speak(
-    String english, {
+    String text, {
     String? audioUrl,
     double volume = 1.0,
+    String languageCode = 'en-US',
   }) async {
     // Cut off whatever's still playing first — the Windows TTS engine only
     // has one voice channel, so a rapid second tap gets silently dropped
@@ -140,9 +148,9 @@ class PronunciationService {
         }
       }
     }
-    await _ensureTtsConfigured();
+    await _ensureTtsConfigured(languageCode);
     await _tts.setVolume(volume);
-    await _tts.speak(english);
+    await _tts.speak(text);
   }
 
   void dispose() {
