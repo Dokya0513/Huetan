@@ -397,5 +397,25 @@
   "friendsStreakLabel": "🔥{days}日",
   "@friendsStreakLabel": {
     "placeholders": { "days": { "type": "int" } }
-  }
+  },
+  "settingsCloudSectionHeader": "クラウドバックアップ",
+  "settingsCloudSignedOutHint": "フレンド画面からサインインすると使えます",
+  "settingsCloudBackupButton": "クラウドにバックアップ",
+  "settingsCloudRestoreButton": "クラウドから復元",
+  "settingsCloudBackupSuccessSnackbar": "クラウドへのバックアップに成功しました",
+  "settingsCloudBackupFailureSnackbar": "バックアップに失敗しました: {error}",
+  "@settingsCloudBackupFailureSnackbar": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "settingsCloudRestoreSuccessSnackbar": "クラウドからの復元に成功しました",
+  "settingsCloudRestoreNoDataSnackbar": "クラウドにバックアップが見つかりません",
+  "settingsCloudRestoreFailureSnackbar": "復元に失敗しました: {error}",
+  "@settingsCloudRestoreFailureSnackbar": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "settingsCloudOverwriteWarning": "他の端末で復元・バックアップした後に片方だけで単語を編集すると、後からバックアップした方の内容で上書きされます。両方の端末で編集した場合はご注意ください。",
+  "cloudNewDataDialogTitle": "新しいデータがあります",
+  "cloudNewDataDialogContent": "他の端末でクラウドにバックアップされたデータの方が新しいようです。復元しますか？（現在のこの端末のデータは上書きされます）",
+  "cloudNewDataDialogSkip": "後で",
+  "cloudNewDataDialogRestore": "復元する"
 }

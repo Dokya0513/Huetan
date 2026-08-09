@@ -261,6 +261,7 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
+                runSpacing: 8,
                 children: [
                   for (final mode in widget.allowedModes)
                     _choiceChip(
@@ -286,6 +287,7 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: _countOptions.map((count) {
                 final label = count == null ? l10n.countAll : '$count';
                 return _choiceChip(
@@ -303,6 +305,7 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: [
                 _choiceChip(
                   label: l10n.noFilter,
@@ -329,6 +332,7 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
+                runSpacing: 8,
                 children: [
                   _choiceChip(
                     label: l10n.noFilter,
@@ -352,6 +356,7 @@ class _FlashcardSetupScreenState extends ConsumerState<FlashcardSetupScreen> {
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
+                runSpacing: 8,
                 children: [
                   _choiceChip(
                     label: l10n.noFilter,

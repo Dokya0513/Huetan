@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../l10n/app_localizations.dart';
 import '../l10n/locale_utils.dart';
@@ -79,6 +80,86 @@ class SettingsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.importFailureSnackbar(e.toString()))),
+        );
+      }
+    }
+  }
+
+  Future<void> _cloudBackup(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final db = ref.read(databaseProvider);
+      final data = await ref.read(backupServiceProvider).buildExport(db);
+      await ref.read(cloudBackupServiceProvider).upload(data);
+      await ref
+          .read(settingsServiceProvider)
+          .saveLastCloudSyncAt(DateTime.now());
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.settingsCloudBackupSuccessSnackbar)),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.settingsCloudBackupFailureSnackbar(e.toString())),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _cloudRestore(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.importConfirmTitle),
+        content: Text(l10n.importConfirmContent),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.settingsCloudRestoreButton),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final data = await ref.read(cloudBackupServiceProvider).download();
+      if (data == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.settingsCloudRestoreNoDataSnackbar)),
+          );
+        }
+        return;
+      }
+      final db = ref.read(databaseProvider);
+      await ref.read(backupServiceProvider).importAndReplace(db, data);
+      final cloudTime = await ref
+          .read(cloudBackupServiceProvider)
+          .lastUploadedAt();
+      await ref
+          .read(settingsServiceProvider)
+          .saveLastCloudSyncAt(cloudTime ?? DateTime.now());
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.settingsCloudRestoreSuccessSnackbar)),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.settingsCloudRestoreFailureSnackbar(e.toString())),
+          ),
         );
       }
     }
@@ -224,6 +305,49 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          const Divider(),
+          const SizedBox(height: 8),
+          _SectionHeader(l10n.settingsCloudSectionHeader),
+          StreamBuilder<AuthState>(
+            stream: Supabase.instance.client.auth.onAuthStateChange,
+            builder: (context, snapshot) {
+              final signedIn =
+                  (snapshot.data?.session?.user ??
+                      Supabase.instance.client.auth.currentUser) !=
+                  null;
+              if (!signedIn) {
+                return Text(
+                  l10n.settingsCloudSignedOutHint,
+                  style: Theme.of(context).textTheme.bodySmall,
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _cloudBackup(context, ref),
+                      icon: const Icon(Icons.cloud_upload_outlined),
+                      label: Text(l10n.settingsCloudBackupButton),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _cloudRestore(context, ref),
+                      icon: const Icon(Icons.cloud_download_outlined),
+                      label: Text(l10n.settingsCloudRestoreButton),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.settingsCloudOverwriteWarning,
+            style: TextStyle(fontSize: 11, color: colors.textSecondary),
           ),
           const SizedBox(height: 8),
           const Divider(),

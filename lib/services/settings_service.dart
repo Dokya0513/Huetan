@@ -19,6 +19,7 @@ class SettingsService {
   static const _darkModeKey = 'dark_mode';
   static const _onboardingSeenKey = 'onboarding_seen';
   static const _learningModeKey = 'learning_mode';
+  static const _lastCloudSyncAtKey = 'last_cloud_sync_at';
 
   Future<double> loadVolume(VolumeChannel channel) async {
     final prefs = await SharedPreferences.getInstance();
@@ -61,5 +62,21 @@ class SettingsService {
   Future<void> saveLearningMode(LearningDirection mode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_learningModeKey, mode.dbValue);
+  }
+
+  /// The cloud backup timestamp this device has already "dealt with" —
+  /// either by uploading (making the cloud match this exact moment) or by
+  /// downloading/dismissing a newer one. Used to decide whether to prompt
+  /// "there's newer data in the cloud" on launch, without re-prompting for
+  /// the same cloud version every time.
+  Future<DateTime?> loadLastCloudSyncAt() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_lastCloudSyncAtKey);
+    return raw == null ? null : DateTime.tryParse(raw);
+  }
+
+  Future<void> saveLastCloudSyncAt(DateTime time) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_lastCloudSyncAtKey, time.toIso8601String());
   }
 }

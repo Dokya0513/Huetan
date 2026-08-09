@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
+import '../services/auto_backup.dart';
 
 class SessionResultScreen extends ConsumerStatefulWidget {
   final int correctCount;
@@ -43,6 +44,11 @@ class _SessionResultScreenState extends ConsumerState<SessionResultScreen> {
       // Best-effort only — the local review session already succeeded
       // regardless of whether this sync goes through.
     }
+    // A finished review session is also a reliable point to back up the
+    // full word/review data, not just the friend-visible XP/streak — see
+    // services/auto_backup.dart's doc comment for why this replaces an
+    // "on app close" trigger.
+    await autoBackupIfSignedIn(ref);
   }
 
   @override

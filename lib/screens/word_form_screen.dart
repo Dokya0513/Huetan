@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../models/learning_direction.dart';
 import '../models/part_of_speech.dart';
 import '../providers/providers.dart';
+import '../services/auto_backup.dart';
 import '../services/dictionary_service.dart';
 import '../services/japanese_dictionary_service.dart';
 
@@ -301,6 +303,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
         japaneseReading: japaneseReading,
         learningDirection: learningMode,
       );
+      unawaited(autoBackupIfSignedIn(ref));
     } else {
       await repository.updateWord(
         id: existing.id,

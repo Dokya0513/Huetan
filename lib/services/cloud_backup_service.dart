@@ -14,13 +14,15 @@ class CloudBackupService {
   static const _bucket = 'backups';
   static const _fileName = 'backup.json';
 
-  String get _path {
+  String get _uid {
     final uid = Supabase.instance.client.auth.currentUser?.id;
     if (uid == null) {
       throw StateError('CloudBackupService requires a signed-in user.');
     }
-    return '$uid/$_fileName';
+    return uid;
   }
+
+  String get _path => '$_uid/$_fileName';
 
   Future<void> upload(Map<String, dynamic> data) async {
     final bytes = Uint8List.fromList(utf8.encode(jsonEncode(data)));
@@ -34,6 +36,19 @@ class CloudBackupService {
             upsert: true,
           ),
         );
+  }
+
+  /// When the current backup file was last written, without downloading
+  /// its (potentially large) contents — used to check whether the cloud
+  /// has something newer than what this device last synced, cheaply
+  /// enough to do on every launch.
+  Future<DateTime?> lastUploadedAt() async {
+    final files = await Supabase.instance.client.storage
+        .from(_bucket)
+        .list(path: _uid);
+    final file = files.where((f) => f.name == _fileName).firstOrNull;
+    final updatedAt = file?.updatedAt;
+    return updatedAt == null ? null : DateTime.tryParse(updatedAt);
   }
 
   /// Returns null if the signed-in user has never uploaded a backup.

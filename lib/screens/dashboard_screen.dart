@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../models/learning_direction.dart';
 import '../providers/providers.dart';
 import '../repositories/word_repository.dart';
+import '../services/auto_backup.dart';
 import '../services/dictionary_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/cefr_distribution_bar.dart';
@@ -61,6 +62,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       learningDirection: LearningDirection.enTarget,
     );
     _quickAddController.clear();
+    unawaited(autoBackupIfSignedIn(ref));
 
     // Fire-and-forget: fill in part of speech/example/audio from the
     // dictionary in the background so quick-added words don't stay
@@ -83,6 +85,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       learningDirection: LearningDirection.jaTarget,
     );
     _quickAddController.clear();
+    unawaited(autoBackupIfSignedIn(ref));
   }
 
   Future<void> _backgroundDictionaryFill(

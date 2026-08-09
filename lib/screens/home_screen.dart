@@ -236,6 +236,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     padding: const EdgeInsets.only(top: 6),
                                     child: Wrap(
                                       spacing: 6,
+                                      runSpacing: 6,
                                       crossAxisAlignment:
                                           WrapCrossAlignment.center,
                                       children: [

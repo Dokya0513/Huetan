@@ -270,5 +270,19 @@
   "friendsListLabel": "Friends",
   "friendsEmptyList": "No friends yet",
   "friendsLevelLabel": "Lv.{level}",
-  "friendsStreakLabel": "🔥{days}d"
+  "friendsStreakLabel": "🔥{days}d",
+  "settingsCloudSectionHeader": "Cloud Backup",
+  "settingsCloudSignedOutHint": "Sign in from the Friends screen to use this",
+  "settingsCloudBackupButton": "Back up to cloud",
+  "settingsCloudRestoreButton": "Restore from cloud",
+  "settingsCloudBackupSuccessSnackbar": "Backed up to the cloud successfully",
+  "settingsCloudBackupFailureSnackbar": "Backup failed: {error}",
+  "settingsCloudRestoreSuccessSnackbar": "Restored from the cloud successfully",
+  "settingsCloudRestoreNoDataSnackbar": "No cloud backup found",
+  "settingsCloudRestoreFailureSnackbar": "Restore failed: {error}",
+  "settingsCloudOverwriteWarning": "If you edit words on more than one device between backups, whichever device backs up last will overwrite the other's changes. Be careful if you use both.",
+  "cloudNewDataDialogTitle": "New data available",
+  "cloudNewDataDialogContent": "There's a newer backup in the cloud from another device. Restore it? (This will overwrite this device's current data.)",
+  "cloudNewDataDialogSkip": "Later",
+  "cloudNewDataDialogRestore": "Restore"
 }
