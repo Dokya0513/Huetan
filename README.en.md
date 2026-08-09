@@ -6,7 +6,7 @@
 
 A vocabulary learning app (Windows desktop / Android) for quickly jotting down words you didn't know and reviewing them with flashcards. Supports both a mode for Japanese speakers learning English words and a mode for English speakers learning Japanese words.
 
-<img src="docs/screenshots/quiz_setup.png" alt="Screenshot of Fuetan's quiz setup screen" width="280">
+<img src="docs/screenshots/home_en.png" alt="Screenshot of Fuetan's home screen" width="280">
 
 
 ## Before You Use This (Disclaimer & About Development)

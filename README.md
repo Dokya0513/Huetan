@@ -6,7 +6,7 @@
 
 会話で知らなかった単語をサッと記録し、暗記カードで復習できる語学学習アプリ（Windows デスクトップ版 / Android版）。日本語話者が英単語を学ぶモードと、英語話者が日本語の単語を学ぶモードの両方に対応しています。
 
-<img src="docs/screenshots/quiz_setup.png" alt="ふえたん クイズ設定画面のスクリーンショット" width="280">
+<img src="docs/screenshots/home_ja.png" alt="ふえたん ホーム画面のスクリーンショット" width="280">
 
 
 ## ご利用前に（免責事項・開発について）
