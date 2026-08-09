@@ -57,6 +57,7 @@ This app is a private, individually-developed project. **Redistribution of the a
 - Japanese word level classification uses [jlpt-word-list](https://github.com/elzup/jlpt-word-list) (MIT; original data: Jonathan Waller's JLPT Resources / tanos.co.uk, CC BY)
 - Japanese dictionary auto-fill uses JMdict/EDICT (Electronic Dictionary Research and Development Group, CC BY-SA 4.0) via [jmdict-simplified](https://github.com/scriptin/jmdict-simplified)
 - English dictionary auto-fill, example sentences, and pronunciation use [dictionaryapi.dev](https://dictionaryapi.dev/) (sourced from [Wiktionary](https://en.wiktionary.org/), CC BY-SA 3.0/4.0)
+- Japanese example sentences use the [Tatoeba Project](https://tatoeba.org/) sentence corpus (CC BY 2.0 FR)
 - Character illustrations are from [Sokosuto](https://soco-st.com/) (redistribution of the illustration assets themselves is prohibited)
 - Fonts: [Baloo 2](https://fonts.google.com/specimen/Baloo+2) / [Zen Maru Gothic](https://fonts.google.com/specimen/Zen+Maru+Gothic) (both SIL Open Font License)
 

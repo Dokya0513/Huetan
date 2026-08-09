@@ -144,6 +144,18 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
       _japaneseReading = result.reading;
     }
 
+    // Tatoeba-derived examples aren't tied to a specific sense (see
+    // DictionaryLookupResult.examples), so they're applied here rather
+    // than in _applySense — same "don't clobber typed text" guard as the
+    // per-sense case.
+    if (_exampleController.text.trim().isEmpty && result.examples.isNotEmpty) {
+      setState(() {
+        _exampleController.text = result.examples.first;
+        _extraExamples = result.examples.skip(1).toList();
+        _extraExamplesSourceText = result.examples.first;
+      });
+    }
+
     if (result.senses.length == 1) {
       _applySense(
         result.senses.first,

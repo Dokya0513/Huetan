@@ -12,19 +12,27 @@ import 'dictionary_service.dart' show DictionaryLookupResult, DictionarySense;
 /// here also carry [DictionarySense.meaning] for auto-filling the meaning
 /// field — dictionaryapi.dev's results never do.
 ///
-/// No audio or example sentences are available from this source, so
-/// [DictionaryLookupResult.audioUrl] is always null and
-/// [DictionarySense.example] is always null.
+/// No audio is available from this source, so
+/// [DictionaryLookupResult.audioUrl] is always null.
 ///
 /// Attribution: JMdict/EDICT dictionary files, property of the Electronic
 /// Dictionary Research and Development Group (https://www.edrdg.org/),
 /// used under Creative Commons Attribution-ShareAlike 4.0. Processed via
 /// https://github.com/scriptin/jmdict-simplified (also CC BY-SA 4.0),
 /// filtered to common-only entries.
+///
+/// Example sentences come from a second, separate source: the Tatoeba
+/// Project (https://tatoeba.org/), CC BY 2.0 FR, via its dictionary-form/
+/// surface-form annotated Japanese sentence index — which is what lets a
+/// lookup for a word's plain dictionary form (e.g. 食べる) match sentences
+/// that actually use an inflected form (食べました) without needing a
+/// morphological analyzer.
 class JapaneseDictionaryService {
   static const _assetPath = 'assets/jmdict/jmdict_common.json';
+  static const _examplesAssetPath = 'assets/tatoeba/jpn_examples.json';
 
   Map<String, _JmdictEntry>? _lookup;
+  Map<String, List<String>>? _examples;
 
   Future<Map<String, _JmdictEntry>> _loadIndex() async {
     final cached = _lookup;
@@ -58,13 +66,34 @@ class JapaneseDictionaryService {
     return map;
   }
 
+  Future<Map<String, List<String>>> _loadExamples() async {
+    final cached = _examples;
+    if (cached != null) return cached;
+
+    final raw = await rootBundle.loadString(_examplesAssetPath);
+    final decoded = jsonDecode(raw) as Map<String, dynamic>;
+    final map = <String, List<String>>{};
+    decoded.forEach((word, sentences) {
+      if (sentences is List) {
+        map[word] = sentences.cast<String>();
+      }
+    });
+    _examples = map;
+    return map;
+  }
+
   Future<DictionaryLookupResult?> lookup(String word) async {
     final trimmed = word.trim();
     if (trimmed.isEmpty) return null;
     final index = await _loadIndex();
     final entry = index[trimmed];
     if (entry == null) return null;
-    return DictionaryLookupResult(senses: entry.senses, reading: entry.reading);
+    final examples = await _loadExamples();
+    return DictionaryLookupResult(
+      senses: entry.senses,
+      reading: entry.reading,
+      examples: examples[trimmed] ?? const [],
+    );
   }
 }
 

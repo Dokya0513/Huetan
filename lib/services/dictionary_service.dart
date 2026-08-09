@@ -34,10 +34,18 @@ class DictionaryLookupResult {
   /// Used for jaTarget TTS instead of raw kanji — see
   /// [Words.japaneseReading]'s doc comment for why.
   final String? reading;
+  /// Example sentences for the whole word, not tied to any one sense —
+  /// unlike [DictionarySense.examples] (per-sense, from dictionaryapi.dev),
+  /// JapaneseDictionaryService's Tatoeba-derived examples aren't sense
+  /// disambiguated, so they live here instead. Empty when the source is
+  /// dictionaryapi.dev (which provides examples per-sense already) or when
+  /// no example sentence was found.
+  final List<String> examples;
   const DictionaryLookupResult({
     required this.senses,
     this.audioUrl,
     this.reading,
+    this.examples = const [],
   });
 }
 

@@ -57,6 +57,7 @@
 - 日本語単語のレベル判定に [jlpt-word-list](https://github.com/elzup/jlpt-word-list)（MIT、元データ: Jonathan Waller氏 JLPT Resources / tanos.co.uk, CC BY）を使用しています
 - 日本語辞書の自動取得に JMdict/EDICT（Electronic Dictionary Research and Development Group、CC BY-SA 4.0）を [jmdict-simplified](https://github.com/scriptin/jmdict-simplified) 経由で使用しています
 - 英単語辞書の自動取得・例文・発音に [dictionaryapi.dev](https://dictionaryapi.dev/) を使用しています（データ元は [Wiktionary](https://en.wiktionary.org/)、CC BY-SA 3.0/4.0）
+- 日本語単語の例文取得に [Tatoeba Project](https://tatoeba.org/) の例文コーパスを使用しています（CC BY 2.0 FR）
 - キャラクターイラストは [ソコスト](https://soco-st.com/) の素材を使用しています（素材自体の再配布は禁止されています）
 - フォントに [Baloo 2](https://fonts.google.com/specimen/Baloo+2) / [Zen Maru Gothic](https://fonts.google.com/specimen/Zen+Maru+Gothic)（いずれも SIL Open Font License）を使用しています
 
