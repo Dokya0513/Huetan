@@ -43,22 +43,39 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
   Future<void> _loadData() async {
     setState(() => _loadingData = true);
+    final service = ref.read(friendsServiceProvider);
+    final errors = <String>[];
+
     try {
-      final service = ref.read(friendsServiceProvider);
-      final results = await Future.wait([
-        service.getMyProfile(),
-        service.getIncomingRequests(),
-        service.getFriends(),
-      ]);
-      if (!mounted) return;
-      setState(() {
-        _myFriendCode = (results[0] as Map<String, dynamic>)['friend_code'] as String?;
-        _incomingRequests = results[1] as List<FriendRequest>;
-        _friends = results[2] as List<Friend>;
-      });
-    } finally {
-      if (mounted) setState(() => _loadingData = false);
+      final profile = await service.getMyProfile();
+      if (mounted) {
+        setState(() => _myFriendCode = profile['friend_code'] as String?);
+      }
+    } catch (e) {
+      errors.add('profile: $e');
     }
+
+    try {
+      final requests = await service.getIncomingRequests();
+      if (mounted) setState(() => _incomingRequests = requests);
+    } catch (e) {
+      errors.add('requests: $e');
+    }
+
+    try {
+      final friends = await service.getFriends();
+      if (mounted) setState(() => _friends = friends);
+    } catch (e) {
+      errors.add('friends: $e');
+    }
+
+    if (errors.isNotEmpty && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errors.join(' / '))));
+    }
+
+    if (mounted) setState(() => _loadingData = false);
   }
 
   Future<void> _signIn() async {
