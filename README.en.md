@@ -2,6 +2,8 @@
 
 [日本語](README.md) | [English](README.en.md)
 
+[![CI](https://github.com/Dokya0513/Huetan/actions/workflows/ci.yml/badge.svg)](https://github.com/Dokya0513/Huetan/actions/workflows/ci.yml)
+
 A vocabulary learning app (Windows desktop / Android) for quickly jotting down words you didn't know and reviewing them with flashcards. Supports both a mode for Japanese speakers learning English words and a mode for English speakers learning Japanese words.
 
 ## Before You Use This (Disclaimer & About Development)

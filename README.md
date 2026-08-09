@@ -2,6 +2,8 @@
 
 [日本語](README.md) | [English](README.en.md)
 
+[![CI](https://github.com/Dokya0513/Huetan/actions/workflows/ci.yml/badge.svg)](https://github.com/Dokya0513/Huetan/actions/workflows/ci.yml)
+
 会話で知らなかった単語をサッと記録し、暗記カードで復習できる語学学習アプリ（Windows デスクトップ版 / Android版）。日本語話者が英単語を学ぶモードと、英語話者が日本語の単語を学ぶモードの両方に対応しています。
 
 ## ご利用前に（免責事項・開発について）
