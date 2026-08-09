@@ -1,0 +1,26 @@
+# Normalize line endings to LF in the repository; Git converts to the
+# platform's native line ending on checkout where appropriate.
+* text=auto eol=lf
+
+*.dart text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.arb text eol=lf
+*.json text eol=lf
+
+# Windows-specific project files commonly carry CRLF from Visual Studio
+# tooling; leave them untouched to avoid noisy diffs.
+*.sln text eol=crlf
+*.vcxproj text eol=crlf
+*.rc text eol=crlf
+
+# Binary assets — do not touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ttf binary
+*.otf binary
+*.ico binary
+*.apk binary
+*.zip binary
