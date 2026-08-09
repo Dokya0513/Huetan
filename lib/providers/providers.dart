@@ -14,6 +14,8 @@ import '../repositories/stats_repository.dart';
 import '../repositories/word_repository.dart';
 import '../services/backup_service.dart';
 import '../services/badge_unlock_service.dart';
+import '../services/cloud_backup_service.dart';
+import '../services/friends_service.dart';
 import '../services/cefr_service.dart';
 import '../services/jlpt_service.dart';
 import '../services/pronunciation_service.dart';
@@ -157,6 +159,14 @@ final settingsServiceProvider = Provider<SettingsService>((ref) {
 
 final backupServiceProvider = Provider<BackupService>((ref) {
   return BackupService();
+});
+
+final cloudBackupServiceProvider = Provider<CloudBackupService>((ref) {
+  return CloudBackupService();
+});
+
+final friendsServiceProvider = Provider<FriendsService>((ref) {
+  return FriendsService();
 });
 
 class VolumeNotifier extends StateNotifier<double> {

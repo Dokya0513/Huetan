@@ -19,6 +19,7 @@ import '../widgets/update_available_banner.dart';
 import '../widgets/weak_words_preview_card.dart';
 import '../widgets/weekly_activity_strip.dart';
 import '../widgets/xp_level_bar.dart';
+import 'friends_screen.dart';
 import 'settings_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -117,6 +118,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       appBar: AppBar(
         title: AppTitleRow(title: l10n.navHome),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.people_outline),
+            tooltip: l10n.friendsNavTooltip,
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const FriendsScreen()));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: l10n.settingsTooltip,
