@@ -1,0 +1,34 @@
+Copyright (c) 2026 Dokya0513
+
+All rights reserved.
+
+This repository's source code is made publicly viewable for transparency,
+but it is NOT open source software.
+
+You MAY:
+  - view the source code
+  - download and use the compiled application (Windows/Android builds
+    published under GitHub Releases) for your own personal, non-commercial
+    use, entirely at your own risk
+
+You MAY NOT, without prior written permission from the copyright holder:
+  - redistribute the compiled application (the exe/zip/apk) or any
+    modified version of it
+  - redistribute, publish, or sublicense the source code, in whole or in
+    part
+  - use the source code, in whole or in part, in another project
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING
+FROM THE USE OF THE SOFTWARE, INCLUDING BUT NOT LIMITED TO DATA LOSS OR
+DEVICE MALFUNCTION.
+
+This app's code was developed with the assistance of Anthropic's Claude
+(an AI coding assistant).
+
+Third-party data and assets bundled with this app (the CEFR-J wordlist,
+the jlpt-word-list / JLPT vocabulary data, JMdict/EDICT, character
+illustrations, and fonts) remain under their own respective licenses.
+See README.md / README.en.md for full credits and license details.
