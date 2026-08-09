@@ -16,7 +16,11 @@ import 'session_result_screen.dart';
 class _Card {
   final Word word;
   final ReviewDirection direction;
-  _Card(this.word, this.direction);
+  /// Picked once per card from [WordDisplay.allExampleSentences] — words
+  /// with more than one available example rotate through a different one
+  /// each session instead of always showing the same sentence.
+  final String? displayExample;
+  _Card(this.word, this.direction, this.displayExample);
 }
 
 class FlashcardScreen extends ConsumerStatefulWidget {
@@ -47,7 +51,11 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
     _cards = widget.words.map((word) {
       final direction = widget
           .allowedDirections[rand.nextInt(widget.allowedDirections.length)];
-      return _Card(word, direction);
+      final examples = word.allExampleSentences;
+      final displayExample = examples.isEmpty
+          ? null
+          : examples[rand.nextInt(examples.length)];
+      return _Card(word, direction, displayExample);
     }).toList();
   }
 
@@ -215,10 +223,10 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
                                     ),
                                   ],
                                 ),
-                                if (card.word.exampleSentence != null) ...[
+                                if (card.displayExample != null) ...[
                                   const SizedBox(height: 16),
                                   Text(
-                                    card.word.exampleSentence!,
+                                    card.displayExample!,
                                     style: Theme.of(
                                       context,
                                     ).textTheme.bodyMedium,

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:drift/drift.dart';
@@ -88,6 +89,7 @@ class WordRepository {
     required String english,
     String? japanese,
     String? exampleSentence,
+    List<String>? extraExamples,
     String? partOfSpeech,
     String? audioUrl,
     String? japaneseReading,
@@ -100,6 +102,7 @@ class WordRepository {
             english: english,
             japanese: Value(japanese),
             exampleSentence: Value(exampleSentence),
+            extraExamples: Value(_encodeExtraExamples(extraExamples)),
             partOfSpeech: Value(partOfSpeech),
             audioUrl: Value(audioUrl),
             japaneseReading: Value(japaneseReading),
@@ -113,6 +116,7 @@ class WordRepository {
     required String english,
     String? japanese,
     String? exampleSentence,
+    List<String>? extraExamples,
     String? partOfSpeech,
     String? audioUrl,
     String? japaneseReading,
@@ -122,12 +126,16 @@ class WordRepository {
         english: Value(english),
         japanese: Value(japanese),
         exampleSentence: Value(exampleSentence),
+        extraExamples: Value(_encodeExtraExamples(extraExamples)),
         partOfSpeech: Value(partOfSpeech),
         audioUrl: Value(audioUrl),
         japaneseReading: Value(japaneseReading),
       ),
     );
   }
+
+  String? _encodeExtraExamples(List<String>? examples) =>
+      (examples == null || examples.isEmpty) ? null : jsonEncode(examples);
 
   Future<void> deleteWord(int id) =>
       (db.delete(db.words)..where((t) => t.id.equals(id))).go();
@@ -167,6 +175,7 @@ class WordRepository {
     required int id,
     String? partOfSpeech,
     String? exampleSentence,
+    List<String>? extraExamples,
     String? audioUrl,
   }) async {
     final word = await (db.select(
@@ -181,6 +190,9 @@ class WordRepository {
             : const Value.absent(),
         exampleSentence: word.exampleSentence == null && exampleSentence != null
             ? Value(exampleSentence)
+            : const Value.absent(),
+        extraExamples: word.exampleSentence == null && exampleSentence != null
+            ? Value(_encodeExtraExamples(extraExamples))
             : const Value.absent(),
         audioUrl: word.audioUrl == null && audioUrl != null
             ? Value(audioUrl)

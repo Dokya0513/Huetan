@@ -157,6 +157,17 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _extraExamplesMeta = const VerificationMeta(
+    'extraExamples',
+  );
+  @override
+  late final GeneratedColumn<String> extraExamples = GeneratedColumn<String>(
+    'extra_examples',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -172,6 +183,7 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
     nextReviewDate,
     learningDirection,
     japaneseReading,
+    extraExamples,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -280,6 +292,15 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
         ),
       );
     }
+    if (data.containsKey('extra_examples')) {
+      context.handle(
+        _extraExamplesMeta,
+        extraExamples.isAcceptableOrUnknown(
+          data['extra_examples']!,
+          _extraExamplesMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -341,6 +362,10 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
         DriftSqlType.string,
         data['${effectivePrefix}japanese_reading'],
       ),
+      extraExamples: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}extra_examples'],
+      ),
     );
   }
 
@@ -364,6 +389,7 @@ class Word extends DataClass implements Insertable<Word> {
   final DateTime? nextReviewDate;
   final String learningDirection;
   final String? japaneseReading;
+  final String? extraExamples;
   const Word({
     required this.id,
     required this.english,
@@ -378,6 +404,7 @@ class Word extends DataClass implements Insertable<Word> {
     this.nextReviewDate,
     required this.learningDirection,
     this.japaneseReading,
+    this.extraExamples,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -411,6 +438,9 @@ class Word extends DataClass implements Insertable<Word> {
     if (!nullToAbsent || japaneseReading != null) {
       map['japanese_reading'] = Variable<String>(japaneseReading);
     }
+    if (!nullToAbsent || extraExamples != null) {
+      map['extra_examples'] = Variable<String>(extraExamples);
+    }
     return map;
   }
 
@@ -443,6 +473,9 @@ class Word extends DataClass implements Insertable<Word> {
       japaneseReading: japaneseReading == null && nullToAbsent
           ? const Value.absent()
           : Value(japaneseReading),
+      extraExamples: extraExamples == null && nullToAbsent
+          ? const Value.absent()
+          : Value(extraExamples),
     );
   }
 
@@ -465,6 +498,7 @@ class Word extends DataClass implements Insertable<Word> {
       nextReviewDate: serializer.fromJson<DateTime?>(json['nextReviewDate']),
       learningDirection: serializer.fromJson<String>(json['learningDirection']),
       japaneseReading: serializer.fromJson<String?>(json['japaneseReading']),
+      extraExamples: serializer.fromJson<String?>(json['extraExamples']),
     );
   }
   @override
@@ -484,6 +518,7 @@ class Word extends DataClass implements Insertable<Word> {
       'nextReviewDate': serializer.toJson<DateTime?>(nextReviewDate),
       'learningDirection': serializer.toJson<String>(learningDirection),
       'japaneseReading': serializer.toJson<String?>(japaneseReading),
+      'extraExamples': serializer.toJson<String?>(extraExamples),
     };
   }
 
@@ -501,6 +536,7 @@ class Word extends DataClass implements Insertable<Word> {
     Value<DateTime?> nextReviewDate = const Value.absent(),
     String? learningDirection,
     Value<String?> japaneseReading = const Value.absent(),
+    Value<String?> extraExamples = const Value.absent(),
   }) => Word(
     id: id ?? this.id,
     english: english ?? this.english,
@@ -523,6 +559,9 @@ class Word extends DataClass implements Insertable<Word> {
     japaneseReading: japaneseReading.present
         ? japaneseReading.value
         : this.japaneseReading,
+    extraExamples: extraExamples.present
+        ? extraExamples.value
+        : this.extraExamples,
   );
   Word copyWithCompanion(WordsCompanion data) {
     return Word(
@@ -553,6 +592,9 @@ class Word extends DataClass implements Insertable<Word> {
       japaneseReading: data.japaneseReading.present
           ? data.japaneseReading.value
           : this.japaneseReading,
+      extraExamples: data.extraExamples.present
+          ? data.extraExamples.value
+          : this.extraExamples,
     );
   }
 
@@ -571,7 +613,8 @@ class Word extends DataClass implements Insertable<Word> {
           ..write('audioUrl: $audioUrl, ')
           ..write('nextReviewDate: $nextReviewDate, ')
           ..write('learningDirection: $learningDirection, ')
-          ..write('japaneseReading: $japaneseReading')
+          ..write('japaneseReading: $japaneseReading, ')
+          ..write('extraExamples: $extraExamples')
           ..write(')'))
         .toString();
   }
@@ -591,6 +634,7 @@ class Word extends DataClass implements Insertable<Word> {
     nextReviewDate,
     learningDirection,
     japaneseReading,
+    extraExamples,
   );
   @override
   bool operator ==(Object other) =>
@@ -608,7 +652,8 @@ class Word extends DataClass implements Insertable<Word> {
           other.audioUrl == this.audioUrl &&
           other.nextReviewDate == this.nextReviewDate &&
           other.learningDirection == this.learningDirection &&
-          other.japaneseReading == this.japaneseReading);
+          other.japaneseReading == this.japaneseReading &&
+          other.extraExamples == this.extraExamples);
 }
 
 class WordsCompanion extends UpdateCompanion<Word> {
@@ -625,6 +670,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
   final Value<DateTime?> nextReviewDate;
   final Value<String> learningDirection;
   final Value<String?> japaneseReading;
+  final Value<String?> extraExamples;
   const WordsCompanion({
     this.id = const Value.absent(),
     this.english = const Value.absent(),
@@ -639,6 +685,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.nextReviewDate = const Value.absent(),
     this.learningDirection = const Value.absent(),
     this.japaneseReading = const Value.absent(),
+    this.extraExamples = const Value.absent(),
   });
   WordsCompanion.insert({
     this.id = const Value.absent(),
@@ -654,6 +701,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.nextReviewDate = const Value.absent(),
     this.learningDirection = const Value.absent(),
     this.japaneseReading = const Value.absent(),
+    this.extraExamples = const Value.absent(),
   }) : english = Value(english);
   static Insertable<Word> custom({
     Expression<int>? id,
@@ -669,6 +717,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
     Expression<DateTime>? nextReviewDate,
     Expression<String>? learningDirection,
     Expression<String>? japaneseReading,
+    Expression<String>? extraExamples,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -684,6 +733,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
       if (nextReviewDate != null) 'next_review_date': nextReviewDate,
       if (learningDirection != null) 'learning_direction': learningDirection,
       if (japaneseReading != null) 'japanese_reading': japaneseReading,
+      if (extraExamples != null) 'extra_examples': extraExamples,
     });
   }
 
@@ -701,6 +751,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
     Value<DateTime?>? nextReviewDate,
     Value<String>? learningDirection,
     Value<String?>? japaneseReading,
+    Value<String?>? extraExamples,
   }) {
     return WordsCompanion(
       id: id ?? this.id,
@@ -716,6 +767,7 @@ class WordsCompanion extends UpdateCompanion<Word> {
       nextReviewDate: nextReviewDate ?? this.nextReviewDate,
       learningDirection: learningDirection ?? this.learningDirection,
       japaneseReading: japaneseReading ?? this.japaneseReading,
+      extraExamples: extraExamples ?? this.extraExamples,
     );
   }
 
@@ -761,6 +813,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
     if (japaneseReading.present) {
       map['japanese_reading'] = Variable<String>(japaneseReading.value);
     }
+    if (extraExamples.present) {
+      map['extra_examples'] = Variable<String>(extraExamples.value);
+    }
     return map;
   }
 
@@ -779,7 +834,8 @@ class WordsCompanion extends UpdateCompanion<Word> {
           ..write('audioUrl: $audioUrl, ')
           ..write('nextReviewDate: $nextReviewDate, ')
           ..write('learningDirection: $learningDirection, ')
-          ..write('japaneseReading: $japaneseReading')
+          ..write('japaneseReading: $japaneseReading, ')
+          ..write('extraExamples: $extraExamples')
           ..write(')'))
         .toString();
   }
@@ -1431,6 +1487,7 @@ typedef $$WordsTableCreateCompanionBuilder =
       Value<DateTime?> nextReviewDate,
       Value<String> learningDirection,
       Value<String?> japaneseReading,
+      Value<String?> extraExamples,
     });
 typedef $$WordsTableUpdateCompanionBuilder =
     WordsCompanion Function({
@@ -1447,6 +1504,7 @@ typedef $$WordsTableUpdateCompanionBuilder =
       Value<DateTime?> nextReviewDate,
       Value<String> learningDirection,
       Value<String?> japaneseReading,
+      Value<String?> extraExamples,
     });
 
 final class $$WordsTableReferences
@@ -1542,6 +1600,11 @@ class $$WordsTableFilterComposer extends Composer<_$AppDatabase, $WordsTable> {
 
   ColumnFilters<String> get japaneseReading => $composableBuilder(
     column: $table.japaneseReading,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get extraExamples => $composableBuilder(
+    column: $table.extraExamples,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1644,6 +1707,11 @@ class $$WordsTableOrderingComposer
     column: $table.japaneseReading,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get extraExamples => $composableBuilder(
+    column: $table.extraExamples,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$WordsTableAnnotationComposer
@@ -1705,6 +1773,11 @@ class $$WordsTableAnnotationComposer
 
   GeneratedColumn<String> get japaneseReading => $composableBuilder(
     column: $table.japaneseReading,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get extraExamples => $composableBuilder(
+    column: $table.extraExamples,
     builder: (column) => column,
   );
 
@@ -1775,6 +1848,7 @@ class $$WordsTableTableManager
                 Value<DateTime?> nextReviewDate = const Value.absent(),
                 Value<String> learningDirection = const Value.absent(),
                 Value<String?> japaneseReading = const Value.absent(),
+                Value<String?> extraExamples = const Value.absent(),
               }) => WordsCompanion(
                 id: id,
                 english: english,
@@ -1789,6 +1863,7 @@ class $$WordsTableTableManager
                 nextReviewDate: nextReviewDate,
                 learningDirection: learningDirection,
                 japaneseReading: japaneseReading,
+                extraExamples: extraExamples,
               ),
           createCompanionCallback:
               ({
@@ -1805,6 +1880,7 @@ class $$WordsTableTableManager
                 Value<DateTime?> nextReviewDate = const Value.absent(),
                 Value<String> learningDirection = const Value.absent(),
                 Value<String?> japaneseReading = const Value.absent(),
+                Value<String?> extraExamples = const Value.absent(),
               }) => WordsCompanion.insert(
                 id: id,
                 english: english,
@@ -1819,6 +1895,7 @@ class $$WordsTableTableManager
                 nextReviewDate: nextReviewDate,
                 learningDirection: learningDirection,
                 japaneseReading: japaneseReading,
+                extraExamples: extraExamples,
               ),
           withReferenceMapper: (p0) => p0
               .map(

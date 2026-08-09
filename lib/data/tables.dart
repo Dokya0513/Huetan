@@ -26,6 +26,12 @@ class Words extends Table {
   // (e.g. 来る as "kitaru" instead of "kuru") without it. Null for words
   // entered without a dictionary lookup, or for enTarget words.
   TextColumn get japaneseReading => text().nullable()();
+  // Additional example sentences beyond `exampleSentence`, from a
+  // dictionary lookup that returned more than one — JSON-encoded
+  // `List<String>`. Used to rotate through varied contexts on review
+  // instead of always showing the same sentence. Null/empty when there's
+  // only the one example (or none).
+  TextColumn get extraExamples => text().nullable()();
 }
 
 class ReviewLogs extends Table {

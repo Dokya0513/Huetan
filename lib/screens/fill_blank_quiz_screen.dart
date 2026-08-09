@@ -49,7 +49,16 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
     super.initState();
     final rand = Random();
     _questions = widget.words.map((word) {
-      final blanked = blankOutWord(word.targetText, word.exampleSentence!);
+      // Rotate through whichever of the word's example sentences actually
+      // contain it, instead of always the primary one — words with only
+      // one example (the common case) are unaffected.
+      final candidates = word.allExampleSentences
+          .where((sentence) => wordAppearsInSentence(word.targetText, sentence))
+          .toList();
+      final sentence = candidates.isEmpty
+          ? word.exampleSentence!
+          : candidates[rand.nextInt(candidates.length)];
+      final blanked = blankOutWord(word.targetText, sentence);
 
       final others = widget.words
           .where((w) => w.id != word.id)

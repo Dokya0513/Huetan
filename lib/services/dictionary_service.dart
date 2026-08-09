@@ -9,7 +9,11 @@ import '../models/part_of_speech.dart';
 /// pick avoids silently assuming the first one is the one the user meant.
 class DictionarySense {
   final PartOfSpeech partOfSpeech;
-  final String? example;
+  /// All example sentences the source offered for this sense (may be more
+  /// than one) — empty if none. [example] is the first of these, kept as a
+  /// convenience for callers that only want a single sentence.
+  final List<String> examples;
+  String? get example => examples.isEmpty ? null : examples.first;
   /// A short meaning/gloss for this sense, if the source provides one —
   /// dictionaryapi.dev (English) doesn't, so this stays null there and the
   /// user always types the meaning by hand; JMdict (Japanese) does, so
@@ -17,7 +21,7 @@ class DictionarySense {
   final String? meaning;
   const DictionarySense({
     required this.partOfSpeech,
-    this.example,
+    this.examples = const [],
     this.meaning,
   });
 }
@@ -58,11 +62,11 @@ class DictionaryService {
       if (data is! List || data.isEmpty) return null;
       final entry = data.first as Map<String, dynamic>;
 
-      // Group by our (coarser) PartOfSpeech category, keeping the first
+      // Group by our (coarser) PartOfSpeech category, collecting every
       // example found for each — e.g. the API's "pronoun" and
       // "preposition" both fold into 「その他」 rather than becoming
       // separate picker entries.
-      final senses = <PartOfSpeech, String?>{};
+      final senses = <PartOfSpeech, List<String>>{};
       final meanings = entry['meanings'];
       if (meanings is List) {
         for (final meaning in meanings) {
@@ -72,19 +76,18 @@ class DictionaryService {
           final pos = mapToPartOfSpeech(apiPos);
           if (senses.containsKey(pos)) continue;
 
-          String? example;
+          final examples = <String>[];
           final definitions = meaning['definitions'];
           if (definitions is List) {
             for (final definition in definitions) {
               if (definition is! Map<String, dynamic>) continue;
               final ex = definition['example'] as String?;
               if (ex != null && ex.isNotEmpty) {
-                example = ex;
-                break;
+                examples.add(ex);
               }
             }
           }
-          senses[pos] = example;
+          senses[pos] = examples;
         }
       }
 
@@ -107,7 +110,9 @@ class DictionaryService {
 
       return DictionaryLookupResult(
         senses: senses.entries
-            .map((e) => DictionarySense(partOfSpeech: e.key, example: e.value))
+            .map(
+              (e) => DictionarySense(partOfSpeech: e.key, examples: e.value),
+            )
             .toList(),
         audioUrl: audioUrl,
       );

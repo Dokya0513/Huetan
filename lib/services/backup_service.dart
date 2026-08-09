@@ -85,6 +85,7 @@ class BackupService {
     'nextReviewDate': w.nextReviewDate?.toIso8601String(),
     'learningDirection': w.learningDirection,
     'japaneseReading': w.japaneseReading,
+    'extraExamples': w.extraExamples,
   };
 
   WordsCompanion _wordFromJson(Map<String, dynamic> j) => WordsCompanion(
@@ -110,6 +111,7 @@ class BackupService {
     // enTarget, matching the schema column's own default for the same case.
     learningDirection: Value(j['learningDirection'] as String? ?? 'enTarget'),
     japaneseReading: Value(j['japaneseReading'] as String?),
+    extraExamples: Value(j['extraExamples'] as String?),
   );
 
   Map<String, dynamic> _reviewLogToJson(ReviewLog r) => {

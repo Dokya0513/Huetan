@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../data/database.dart';
 import 'learning_direction.dart';
 
@@ -44,5 +46,20 @@ extension WordDisplay on Word {
       return japaneseReading!;
     }
     return targetText;
+  }
+
+  /// All known example sentences for this word — the primary
+  /// [exampleSentence] followed by any [extraExamples] captured from a
+  /// dictionary lookup that returned more than one. Used to rotate through
+  /// varied contexts on review instead of always showing the same sentence.
+  /// Empty if the word has no example sentence at all.
+  List<String> get allExampleSentences {
+    final primary = exampleSentence;
+    final extrasJson = extraExamples;
+    return [
+      if (primary != null && primary.isNotEmpty) primary,
+      if (extrasJson != null && extrasJson.isNotEmpty)
+        ...(jsonDecode(extrasJson) as List).cast<String>(),
+    ];
   }
 }

@@ -96,6 +96,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       id: wordId,
       partOfSpeech: sense.partOfSpeech.label,
       exampleSentence: sense.example,
+      extraExamples: sense.examples.skip(1).toList(),
       audioUrl: result.audioUrl,
     );
   }

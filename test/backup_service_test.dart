@@ -35,6 +35,7 @@ void main() {
         english: 'apple',
         japanese: 'りんご',
         exampleSentence: 'I ate an apple.',
+        extraExamples: ['An apple a day.', 'She picked an apple.'],
         partOfSpeech: '名詞',
         audioUrl: 'https://example.com/apple.mp3',
         learningDirection: LearningDirection.enTarget,
@@ -62,6 +63,10 @@ void main() {
       expect(enWord.english, 'apple');
       expect(enWord.japanese, 'りんご');
       expect(enWord.exampleSentence, 'I ate an apple.');
+      expect(
+        enWord.extraExamples,
+        '["An apple a day.","She picked an apple."]',
+      );
       expect(enWord.partOfSpeech, '名詞');
       expect(enWord.audioUrl, 'https://example.com/apple.mp3');
       expect(enWord.learningDirection, LearningDirection.enTarget.dbValue);
@@ -116,6 +121,7 @@ void main() {
         LearningDirection.enTarget.dbValue,
       );
       expect(imported.single.japaneseReading, isNull);
+      expect(imported.single.extraExamples, isNull);
     },
   );
 }

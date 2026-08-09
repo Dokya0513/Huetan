@@ -65,6 +65,7 @@ void main() {
       // pre-existing rows.
       expect(word.audioUrl, isNull);
       expect(word.nextReviewDate, isNull);
+      expect(word.extraExamples, isNull);
 
       // WordTags was introduced in v4 and removed again in v5 — the table
       // must not exist after migrating straight from v1 to v5.

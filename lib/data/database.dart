@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -78,6 +78,12 @@ class AppDatabase extends _$AppDatabase {
         // Same from>=3 guard as learningDirection above, for the same
         // reason (the `from < 3` branch already gets this column for free).
         await m.addColumn(words, words.japaneseReading);
+      }
+      if (from >= 3 && from < 8) {
+        // Adds storage for extra example sentences beyond the primary one,
+        // for rotating through varied contexts on review. Same from>=3
+        // guard as the columns above, for the same reason.
+        await m.addColumn(words, words.extraExamples);
       }
     },
   );

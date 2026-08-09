@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,6 +32,13 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
   String? _japaneseReading;
   bool _isLookingUp = false;
 
+  // Extra example sentences captured alongside the primary one in
+  // _exampleController, and the exact primary text they were captured for —
+  // if the user later retypes the primary example by hand, these no longer
+  // correspond to it and are dropped at save time rather than saved stale.
+  List<String> _extraExamples = [];
+  String? _extraExamplesSourceText;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +53,11 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
         : null;
     _audioUrl = existing?.audioUrl;
     _japaneseReading = existing?.japaneseReading;
+    final existingExtras = existing?.extraExamples;
+    if (existingExtras != null && existingExtras.isNotEmpty) {
+      _extraExamples = (jsonDecode(existingExtras) as List).cast<String>();
+      _extraExamplesSourceText = existing?.exampleSentence;
+    }
     _japaneseController.addListener(_invalidateReadingOnManualEdit);
   }
 
@@ -161,8 +175,10 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
       } else {
         _selectedPos ??= sense.partOfSpeech;
       }
-      if (_exampleController.text.trim().isEmpty && sense.example != null) {
-        _exampleController.text = sense.example!;
+      if (_exampleController.text.trim().isEmpty && sense.examples.isNotEmpty) {
+        _exampleController.text = sense.examples.first;
+        _extraExamples = sense.examples.skip(1).toList();
+        _extraExamplesSourceText = sense.examples.first;
       }
       final meaningController = isEnTarget
           ? _japaneseController
@@ -256,12 +272,18 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
     // The reading is only valid if it still matches the current text (the
     // manual-edit listener clears it otherwise).
     final japaneseReading = japanese != null ? _japaneseReading : null;
+    // Same idea for the extra examples: only valid if the primary example
+    // still matches the text they were captured alongside.
+    final extraExamples = (example != null && example == _extraExamplesSourceText)
+        ? _extraExamples
+        : null;
 
     if (existing == null) {
       await repository.addWord(
         english: english,
         japanese: japanese,
         exampleSentence: example,
+        extraExamples: extraExamples,
         partOfSpeech: partOfSpeech,
         audioUrl: _audioUrl,
         japaneseReading: japaneseReading,
@@ -273,6 +295,7 @@ class _WordFormScreenState extends ConsumerState<WordFormScreen> {
         english: english,
         japanese: japanese,
         exampleSentence: example,
+        extraExamples: extraExamples,
         partOfSpeech: partOfSpeech,
         audioUrl: _audioUrl,
         japaneseReading: japaneseReading,
