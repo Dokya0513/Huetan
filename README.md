@@ -1,5 +1,7 @@
 # ふえたん / Fuetan
 
+[日本語](README.md) | [English](README.en.md)
+
 会話で知らなかった単語をサッと記録し、暗記カードで復習できる語学学習アプリ（Windows デスクトップ版 / Android版）。日本語話者が英単語を学ぶモードと、英語話者が日本語の単語を学ぶモードの両方に対応しています。
 
 ## ご利用前に（免責事項・開発について）
@@ -7,12 +9,6 @@
 これは個人が趣味で開発しているアプリで、動作の保証やサポート体制はありません。**利用によって生じたいかなる損害（データの消失、PCの不具合など）についても、開発者は責任を負いかねます。** ご自身の判断・自己責任でご利用いただける方のみ、ダウンロードをお願いします。
 
 **本アプリのコードは Anthropic の Claude（AIコーディングアシスタント）を使用して開発されています。** この点をご理解・ご了承いただける方のみ、ダウンロード・ご利用をお願いします。
-
----
-
-This app is developed by an individual as a hobby project, with no guarantee of functionality or support. **The developer is not responsible for any damages arising from use (data loss, PC malfunction, etc.).** Please download and use it only at your own risk and discretion.
-
-**This app's code was developed using Anthropic's Claude (an AI coding assistant).** Please download and use it only if you understand and accept this.
 
 ## インストール方法（PCに詳しくない方向け）
 
