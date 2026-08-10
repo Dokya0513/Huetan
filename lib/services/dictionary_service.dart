@@ -51,14 +51,34 @@ class DictionaryLookupResult {
 
 /// Looks up an English word using the free dictionaryapi.dev API
 /// (no API key required). Returns null if the word isn't found or the
-/// request fails.
+/// request fails. Multi-word input (idioms/phrases) that dictionaryapi.dev
+/// doesn't cover falls back to [_lookupWiktionary], which does have idiom
+/// entries.
 class DictionaryService {
   static const _baseUrl = 'https://api.dictionaryapi.dev/api/v2/entries/en';
+  static const _wiktionaryBaseUrl =
+      'https://en.wiktionary.org/api/rest_v1/page/definition';
 
   Future<DictionaryLookupResult?> lookup(String word) async {
     final trimmed = word.trim();
     if (trimmed.isEmpty) return null;
 
+    final primary = await _lookupPrimary(trimmed);
+    if (primary != null && primary.senses.isNotEmpty) return primary;
+
+    // dictionaryapi.dev is single-word only; idioms ("kick the bucket")
+    // never resolve there, so only pay for a second network round-trip
+    // when the input actually looks like a phrase.
+    if (trimmed.contains(' ')) {
+      final fromWiktionary = await _lookupWiktionary(trimmed);
+      if (fromWiktionary != null && fromWiktionary.senses.isNotEmpty) {
+        return fromWiktionary;
+      }
+    }
+    return primary;
+  }
+
+  Future<DictionaryLookupResult?> _lookupPrimary(String trimmed) async {
     try {
       final response = await http
           .get(Uri.parse('$_baseUrl/${Uri.encodeComponent(trimmed)}'))
@@ -127,5 +147,79 @@ class DictionaryService {
     } catch (_) {
       return null;
     }
+  }
+
+  /// Wiktionary's REST "definition" endpoint, used as a fallback for
+  /// multi-word input dictionaryapi.dev doesn't cover — it has entries for
+  /// common idioms (e.g. "kick the bucket") tagged with a part of speech of
+  /// "Idiom" or "Phrase". Content is CC BY-SA 4.0 (credited in Settings).
+  Future<DictionaryLookupResult?> _lookupWiktionary(String trimmed) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse(
+              '$_wiktionaryBaseUrl/${Uri.encodeComponent(trimmed)}',
+            ),
+          )
+          .timeout(const Duration(seconds: 8));
+
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body);
+      if (data is! Map<String, dynamic>) return null;
+      final entries = data['en'];
+      if (entries is! List) return null;
+
+      final senses = <PartOfSpeech, List<String>>{};
+      for (final entry in entries) {
+        if (entry is! Map<String, dynamic>) continue;
+        final apiPos = entry['partOfSpeech'] as String?;
+        if (apiPos == null) continue;
+        final pos = apiPos.toLowerCase() == 'idiom'
+            ? PartOfSpeech.phrase
+            : mapToPartOfSpeech(apiPos);
+        if (senses.containsKey(pos)) continue;
+
+        final examples = <String>[];
+        final definitions = entry['definitions'];
+        if (definitions is List) {
+          for (final definition in definitions) {
+            if (definition is! Map<String, dynamic>) continue;
+            final rawExamples = definition['examples'];
+            if (rawExamples is List) {
+              for (final ex in rawExamples) {
+                if (ex is String) examples.add(_stripHtml(ex));
+              }
+            }
+          }
+        }
+        senses[pos] = examples;
+      }
+
+      if (senses.isEmpty) return null;
+      return DictionaryLookupResult(
+        senses: senses.entries
+            .map(
+              (e) => DictionarySense(partOfSpeech: e.key, examples: e.value),
+            )
+            .toList(),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Wiktionary definitions/examples come as HTML fragments (with links to
+  /// other entries etc.) — strip tags and unescape the handful of entities
+  /// that show up in practice, since a full HTML parser is overkill here.
+  String _stripHtml(String html) {
+    return html
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .trim();
   }
 }

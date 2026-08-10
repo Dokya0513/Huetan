@@ -233,6 +233,7 @@
   "posAdverb": "副詞",
   "posPhrase": "フレーズ",
   "posOther": "その他",
+  "cefrOutOfScopeLabel": "CEFR対象外",
 
   "wordConditionWeak": "苦手",
   "wordConditionAlert": "要注意",
@@ -352,6 +353,7 @@
 
   "settingsCreditsJlptText": "JLPT語彙データ（jlpt-word-list, MIT）\nhttps://github.com/elzup/jlpt-word-list\n元データ: Jonathan Waller氏 JLPT Resources (tanos.co.uk), CC BY\n単語のJLPTレベル判定に使用",
   "settingsCreditsJmdictText": "JMdict/EDICT辞書データ\nElectronic Dictionary Research and Development Group (https://www.edrdg.org/)\nCC BY-SA 4.0 / jmdict-simplified経由で使用\n日本語の意味・品詞の自動取得に使用",
+  "settingsCreditsWiktionaryText": "Wiktionary\nWiktionary contributors (https://en.wiktionary.org/)\nCC BY-SA 4.0\n英語のイディオム・フレーズの自動取得に使用",
   "settingsCreditsCharacterText": "キャラクターイラスト: ソコスト (https://soco-st.com/)",
 
   "updateAvailableTitle": "新しいバージョンがあります",

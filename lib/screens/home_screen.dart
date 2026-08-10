@@ -209,6 +209,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           } else {
                             jlpt = jlptWordlist?[targetKey];
                           }
+                          // Multi-word entries (idioms/phrases) fall outside
+                          // the CEFR-J wordlist's ~7000-word single-word
+                          // coverage by design (see cefr_service.dart) — show
+                          // that explicitly instead of silently showing no
+                          // pill at all, which reads as "not looked up yet"
+                          // rather than "not applicable". Keyed off the text
+                          // actually containing a space rather than the POS
+                          // picker value: idioms can be tagged 動詞/形容詞/etc
+                          // (e.g. "kick the bucket" via the Wiktionary
+                          // fallback in dictionary_service.dart), not just
+                          // フレーズ, so POS alone would miss them.
+                          final cefrOutOfScope =
+                              isEnTargetWord &&
+                              word.targetText.trim().contains(' ') &&
+                              cefr == null;
                           final meaning = word.meaningText;
                           return ListTile(
                             title: Text(
@@ -231,7 +246,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           fontStyle: FontStyle.italic,
                                         ),
                                       ),
-                                if (pos != null || cefr != null || jlpt != null)
+                                if (pos != null ||
+                                    cefr != null ||
+                                    cefrOutOfScope ||
+                                    jlpt != null)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 6),
                                     child: Wrap(
@@ -246,7 +264,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             color: colorForPos(pos, unsetColor),
                                           ),
                                         if (cefr != null)
-                                          _CefrPill(level: cefr),
+                                          _CefrPill(level: cefr)
+                                        else if (cefrOutOfScope)
+                                          const _CefrOutOfScopePill(),
                                         if (jlpt != null)
                                           _JlptPill(level: jlpt),
                                       ],
@@ -356,6 +376,34 @@ class _CefrPill extends StatelessWidget {
       ),
       child: Text(
         level.label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown instead of [_CefrPill] for phrase/idiom entries — CEFR-J is a
+/// single-word wordlist (see cefr_service.dart), so phrases always miss it.
+/// Making that explicit avoids it reading as "not looked up yet".
+class _CefrOutOfScopePill extends StatelessWidget {
+  const _CefrOutOfScopePill();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final color = Theme.of(context).colorScheme.outline;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: color, width: 1.5),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        l10n.cefrOutOfScopeLabel,
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,

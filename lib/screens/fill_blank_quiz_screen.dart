@@ -72,8 +72,18 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
       final samePos = others
           .where((w) => w.partOfSpeech == word.partOfSpeech)
           .toList();
+      // Within same-POS, further prefer ones that are also multi-word (or
+      // also single-word) as the answer — otherwise an idiom's correct
+      // answer ends up next to single-word options (or vice versa), which
+      // reads as an obviously-wrong choice on sight rather than a real
+      // distractor. Falls back to any same-POS word when there aren't
+      // enough of matching shape yet (few phrases registered so far).
+      final isMultiWord = word.targetText.trim().contains(' ');
+      final samePosSameShape = samePos
+          .where((w) => w.targetText.trim().contains(' ') == isMultiWord)
+          .toList();
       final distractors = <String>{};
-      for (final pool in [samePos, others]) {
+      for (final pool in [samePosSameShape, samePos, others]) {
         final shuffled = List.of(pool)..shuffle(rand);
         for (final w in shuffled) {
           if (distractors.length >= 3) break;
