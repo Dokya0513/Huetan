@@ -15,6 +15,12 @@ This app is developed by an individual as a hobby project, with no guarantee of 
 
 **This app's code was developed using Anthropic's Claude (an AI coding assistant).** Please download and use it only if you understand and accept this.
 
+## Support Development
+
+If you enjoy this app, donations to help fund future development are appreciated.
+
+[![Doneru](https://img.shields.io/badge/Doneru-Support-ff69b4)](https://doneru.jp/Dokya0513)
+
 ## Installation (for non-technical users)
 
 ### Windows
