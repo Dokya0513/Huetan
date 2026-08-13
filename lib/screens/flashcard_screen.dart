@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
 import '../l10n/app_localizations.dart';
+import '../models/answer_quality.dart';
 import '../models/learning_direction.dart';
 import '../models/word_display.dart';
 import '../providers/providers.dart';
@@ -59,16 +60,17 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
     }).toList();
   }
 
-  Future<void> _answer(bool isCorrect) async {
+  Future<void> _answer(AnswerQuality quality) async {
     final card = _cards[_index];
     await ref
         .read(wordRepositoryProvider)
         .recordAnswer(
           wordId: card.word.id,
           direction: card.direction,
-          isCorrect: isCorrect,
+          quality: quality,
         );
 
+    final isCorrect = quality.isCorrect;
     if (isCorrect) {
       final volume = ref.read(seVolumeProvider);
       ref.read(soundServiceProvider).playCorrect(volume: volume);
@@ -265,15 +267,28 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => _answer(false),
-                      child: Text(l10n.dontKnowButton),
+                      onPressed: () => _answer(AnswerQuality.didntKnow),
+                      child: Text(
+                        l10n.dontKnowButton,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _answer(AnswerQuality.struggled),
+                      child: Text(
+                        l10n.struggledButton,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: FilledButton(
-                      onPressed: () => _answer(true),
-                      child: Text(l10n.knowButton),
+                      onPressed: () => _answer(AnswerQuality.knew),
+                      child: Text(l10n.knowButton, textAlign: TextAlign.center),
                     ),
                   ),
                 ],

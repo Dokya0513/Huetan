@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -84,6 +84,32 @@ class AppDatabase extends _$AppDatabase {
         // for rotating through varied contexts on review. Same from>=3
         // guard as the columns above, for the same reason.
         await m.addColumn(words, words.extraExamples);
+      }
+      if (from >= 3 && from < 9) {
+        // Switches the review scheduler from fixed per-box intervals to
+        // SM-2 (ease factor / repetitions / interval) — see tables.dart's
+        // doc comments on these columns. Same from>=3 guard as above.
+        await m.addColumn(words, words.easeFactor);
+        await m.addColumn(words, words.srsRepetitions);
+        await m.addColumn(words, words.srsInterval);
+      }
+      if (from < 9) {
+        // Backfill from the pre-SM-2 Leitner box for words already in
+        // progress, so their next review doesn't cold-start back at a
+        // 1-day interval — only genuinely new/unreviewed words stay at
+        // the column defaults (interval 0, repetitions 0). Deliberately
+        // NOT guarded by from>=3 like the addColumn calls above: an
+        // upgrade starting below v3 already has these columns (the
+        // `from < 3` branch's recreate uses the current, v9+ table
+        // shape) but still needs this same backfill run against them.
+        await m.database.customStatement('''
+              UPDATE words
+              SET srs_interval = CASE leitner_box
+                    WHEN 1 THEN 1 WHEN 2 THEN 3 WHEN 3 THEN 7
+                    WHEN 4 THEN 14 ELSE 30 END,
+                  srs_repetitions = leitner_box
+              WHERE last_reviewed_at IS NOT NULL
+            ''');
       }
     },
   );

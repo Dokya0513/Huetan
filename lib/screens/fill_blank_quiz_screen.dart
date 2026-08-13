@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
 import '../l10n/app_localizations.dart';
+import '../models/answer_quality.dart';
 import '../models/fill_blank.dart';
 import '../models/learning_direction.dart';
 import '../models/word_display.dart';
@@ -118,7 +119,9 @@ class _FillBlankQuizScreenState extends ConsumerState<FillBlankQuizScreen> {
         .recordAnswer(
           wordId: question.word.id,
           direction: ReviewDirection.enToJa,
-          isCorrect: isCorrect,
+          // Multiple choice can only observe right/wrong, not "struggled" —
+          // see AnswerQuality's doc comment.
+          quality: isCorrect ? AnswerQuality.knew : AnswerQuality.didntKnow,
         );
 
     if (isCorrect) {

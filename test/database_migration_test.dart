@@ -1,4 +1,4 @@
-// Covers AppDatabase's schema migration path (schemaVersion 1 -> 5). This
+// Covers AppDatabase's schema migration path (schemaVersion 1 -> 9). This
 // runs against real user data whenever someone updates the app, so a
 // silent mistake here can corrupt or lose existing words without ever
 // showing an error during development.
@@ -11,7 +11,11 @@ import 'package:sqlite3/sqlite3.dart' as sqlite3;
 /// `INSERT ... SELECT` column list in AppDatabase's migration code) and
 /// seeds it with data, so the test exercises the *real* upgrade path
 /// rather than just a fresh `onCreate`.
-sqlite3.Database _buildV1Database() {
+///
+/// [reviewed] controls whether the seeded word has `last_reviewed_at` set —
+/// the v9 migration's SM-2 backfill only runs for already-reviewed words
+/// (see database.dart), so both cases need covering.
+sqlite3.Database _buildV1Database({bool reviewed = false}) {
   final raw = sqlite3.sqlite3.openInMemory();
   raw.execute('''
     CREATE TABLE words (
@@ -38,9 +42,10 @@ sqlite3.Database _buildV1Database() {
 
   final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   raw.execute(
-    'INSERT INTO words (english, japanese, tag, created_at, leitner_box) '
-    "VALUES ('abandon', '捨てる', 'ビジネス', ?, 3)",
-    [now],
+    'INSERT INTO words '
+    '(english, japanese, tag, created_at, leitner_box, last_reviewed_at) '
+    "VALUES ('abandon', '捨てる', 'ビジネス', ?, 3, ?)",
+    [now, reviewed ? now : null],
   );
   raw.execute('PRAGMA user_version = 1');
   return raw;
@@ -66,6 +71,11 @@ void main() {
       expect(word.audioUrl, isNull);
       expect(word.nextReviewDate, isNull);
       expect(word.extraExamples, isNull);
+      // Never reviewed, so the SM-2 backfill leaves these at the column
+      // defaults rather than deriving them from leitner_box.
+      expect(word.easeFactor, 2.5);
+      expect(word.srsRepetitions, 0);
+      expect(word.srsInterval, 0);
 
       // WordTags was introduced in v4 and removed again in v5 — the table
       // must not exist after migrating straight from v1 to v5.
@@ -75,6 +85,23 @@ void main() {
           )
           .get();
       expect(tableExists, isEmpty);
+
+      await db.close();
+    },
+  );
+
+  test(
+    'upgrading from v1 backfills SM-2 state for an already-reviewed word',
+    () async {
+      final rawDb = _buildV1Database(reviewed: true);
+      final db = AppDatabase.forTesting(NativeDatabase.opened(rawDb));
+
+      final word = (await db.select(db.words).get()).single;
+      // leitner_box 3 mapped to the old fixed schedule's 7-day interval —
+      // see database.dart's v9 migration backfill.
+      expect(word.srsInterval, 7);
+      expect(word.srsRepetitions, 3);
+      expect(word.easeFactor, 2.5);
 
       await db.close();
     },

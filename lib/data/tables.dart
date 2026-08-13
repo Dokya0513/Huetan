@@ -32,6 +32,23 @@ class Words extends Table {
   // instead of always showing the same sentence. Null/empty when there's
   // only the one example (or none).
   TextColumn get extraExamples => text().nullable()();
+  // SM-2 spaced-repetition state (see recordAnswer() in
+  // word_repository.dart for the update rules). `leitnerBox` above is now
+  // *derived* from `srsInterval` purely as a 1-5 display/sort tier for
+  // existing UI (weak-word badges, session weighting) — it no longer
+  // independently drives the review schedule.
+  //
+  // Ease factor ("EF"): how easily this word is remembered. Starts at
+  // SM-2's standard 2.5 and only moves within [1.3, ...) — lower means the
+  // interval grows more slowly after each correct answer.
+  RealColumn get easeFactor => real().withDefault(const Constant(2.5))();
+  // Consecutive correct-answer streak — resets to 0 on a "わからなかった"
+  // answer, which is what routes recordAnswer() into the "start the ramp
+  // over at 1 day" branch instead of interval * easeFactor.
+  IntColumn get srsRepetitions => integer().withDefault(const Constant(0))();
+  // Current SM-2 interval in days, used both to compute nextReviewDate and
+  // as the base for the *next* interval (srsInterval * easeFactor).
+  IntColumn get srsInterval => integer().withDefault(const Constant(0))();
 }
 
 class ReviewLogs extends Table {

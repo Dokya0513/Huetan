@@ -168,6 +168,42 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _easeFactorMeta = const VerificationMeta(
+    'easeFactor',
+  );
+  @override
+  late final GeneratedColumn<double> easeFactor = GeneratedColumn<double>(
+    'ease_factor',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(2.5),
+  );
+  static const VerificationMeta _srsRepetitionsMeta = const VerificationMeta(
+    'srsRepetitions',
+  );
+  @override
+  late final GeneratedColumn<int> srsRepetitions = GeneratedColumn<int>(
+    'srs_repetitions',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _srsIntervalMeta = const VerificationMeta(
+    'srsInterval',
+  );
+  @override
+  late final GeneratedColumn<int> srsInterval = GeneratedColumn<int>(
+    'srs_interval',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -184,6 +220,9 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
     learningDirection,
     japaneseReading,
     extraExamples,
+    easeFactor,
+    srsRepetitions,
+    srsInterval,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -301,6 +340,30 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
         ),
       );
     }
+    if (data.containsKey('ease_factor')) {
+      context.handle(
+        _easeFactorMeta,
+        easeFactor.isAcceptableOrUnknown(data['ease_factor']!, _easeFactorMeta),
+      );
+    }
+    if (data.containsKey('srs_repetitions')) {
+      context.handle(
+        _srsRepetitionsMeta,
+        srsRepetitions.isAcceptableOrUnknown(
+          data['srs_repetitions']!,
+          _srsRepetitionsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('srs_interval')) {
+      context.handle(
+        _srsIntervalMeta,
+        srsInterval.isAcceptableOrUnknown(
+          data['srs_interval']!,
+          _srsIntervalMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -366,6 +429,18 @@ class $WordsTable extends Words with TableInfo<$WordsTable, Word> {
         DriftSqlType.string,
         data['${effectivePrefix}extra_examples'],
       ),
+      easeFactor: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}ease_factor'],
+      )!,
+      srsRepetitions: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}srs_repetitions'],
+      )!,
+      srsInterval: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}srs_interval'],
+      )!,
     );
   }
 
@@ -390,6 +465,9 @@ class Word extends DataClass implements Insertable<Word> {
   final String learningDirection;
   final String? japaneseReading;
   final String? extraExamples;
+  final double easeFactor;
+  final int srsRepetitions;
+  final int srsInterval;
   const Word({
     required this.id,
     required this.english,
@@ -405,6 +483,9 @@ class Word extends DataClass implements Insertable<Word> {
     required this.learningDirection,
     this.japaneseReading,
     this.extraExamples,
+    required this.easeFactor,
+    required this.srsRepetitions,
+    required this.srsInterval,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -441,6 +522,9 @@ class Word extends DataClass implements Insertable<Word> {
     if (!nullToAbsent || extraExamples != null) {
       map['extra_examples'] = Variable<String>(extraExamples);
     }
+    map['ease_factor'] = Variable<double>(easeFactor);
+    map['srs_repetitions'] = Variable<int>(srsRepetitions);
+    map['srs_interval'] = Variable<int>(srsInterval);
     return map;
   }
 
@@ -476,6 +560,9 @@ class Word extends DataClass implements Insertable<Word> {
       extraExamples: extraExamples == null && nullToAbsent
           ? const Value.absent()
           : Value(extraExamples),
+      easeFactor: Value(easeFactor),
+      srsRepetitions: Value(srsRepetitions),
+      srsInterval: Value(srsInterval),
     );
   }
 
@@ -499,6 +586,9 @@ class Word extends DataClass implements Insertable<Word> {
       learningDirection: serializer.fromJson<String>(json['learningDirection']),
       japaneseReading: serializer.fromJson<String?>(json['japaneseReading']),
       extraExamples: serializer.fromJson<String?>(json['extraExamples']),
+      easeFactor: serializer.fromJson<double>(json['easeFactor']),
+      srsRepetitions: serializer.fromJson<int>(json['srsRepetitions']),
+      srsInterval: serializer.fromJson<int>(json['srsInterval']),
     );
   }
   @override
@@ -519,6 +609,9 @@ class Word extends DataClass implements Insertable<Word> {
       'learningDirection': serializer.toJson<String>(learningDirection),
       'japaneseReading': serializer.toJson<String?>(japaneseReading),
       'extraExamples': serializer.toJson<String?>(extraExamples),
+      'easeFactor': serializer.toJson<double>(easeFactor),
+      'srsRepetitions': serializer.toJson<int>(srsRepetitions),
+      'srsInterval': serializer.toJson<int>(srsInterval),
     };
   }
 
@@ -537,6 +630,9 @@ class Word extends DataClass implements Insertable<Word> {
     String? learningDirection,
     Value<String?> japaneseReading = const Value.absent(),
     Value<String?> extraExamples = const Value.absent(),
+    double? easeFactor,
+    int? srsRepetitions,
+    int? srsInterval,
   }) => Word(
     id: id ?? this.id,
     english: english ?? this.english,
@@ -562,6 +658,9 @@ class Word extends DataClass implements Insertable<Word> {
     extraExamples: extraExamples.present
         ? extraExamples.value
         : this.extraExamples,
+    easeFactor: easeFactor ?? this.easeFactor,
+    srsRepetitions: srsRepetitions ?? this.srsRepetitions,
+    srsInterval: srsInterval ?? this.srsInterval,
   );
   Word copyWithCompanion(WordsCompanion data) {
     return Word(
@@ -595,6 +694,15 @@ class Word extends DataClass implements Insertable<Word> {
       extraExamples: data.extraExamples.present
           ? data.extraExamples.value
           : this.extraExamples,
+      easeFactor: data.easeFactor.present
+          ? data.easeFactor.value
+          : this.easeFactor,
+      srsRepetitions: data.srsRepetitions.present
+          ? data.srsRepetitions.value
+          : this.srsRepetitions,
+      srsInterval: data.srsInterval.present
+          ? data.srsInterval.value
+          : this.srsInterval,
     );
   }
 
@@ -614,7 +722,10 @@ class Word extends DataClass implements Insertable<Word> {
           ..write('nextReviewDate: $nextReviewDate, ')
           ..write('learningDirection: $learningDirection, ')
           ..write('japaneseReading: $japaneseReading, ')
-          ..write('extraExamples: $extraExamples')
+          ..write('extraExamples: $extraExamples, ')
+          ..write('easeFactor: $easeFactor, ')
+          ..write('srsRepetitions: $srsRepetitions, ')
+          ..write('srsInterval: $srsInterval')
           ..write(')'))
         .toString();
   }
@@ -635,6 +746,9 @@ class Word extends DataClass implements Insertable<Word> {
     learningDirection,
     japaneseReading,
     extraExamples,
+    easeFactor,
+    srsRepetitions,
+    srsInterval,
   );
   @override
   bool operator ==(Object other) =>
@@ -653,7 +767,10 @@ class Word extends DataClass implements Insertable<Word> {
           other.nextReviewDate == this.nextReviewDate &&
           other.learningDirection == this.learningDirection &&
           other.japaneseReading == this.japaneseReading &&
-          other.extraExamples == this.extraExamples);
+          other.extraExamples == this.extraExamples &&
+          other.easeFactor == this.easeFactor &&
+          other.srsRepetitions == this.srsRepetitions &&
+          other.srsInterval == this.srsInterval);
 }
 
 class WordsCompanion extends UpdateCompanion<Word> {
@@ -671,6 +788,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
   final Value<String> learningDirection;
   final Value<String?> japaneseReading;
   final Value<String?> extraExamples;
+  final Value<double> easeFactor;
+  final Value<int> srsRepetitions;
+  final Value<int> srsInterval;
   const WordsCompanion({
     this.id = const Value.absent(),
     this.english = const Value.absent(),
@@ -686,6 +806,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.learningDirection = const Value.absent(),
     this.japaneseReading = const Value.absent(),
     this.extraExamples = const Value.absent(),
+    this.easeFactor = const Value.absent(),
+    this.srsRepetitions = const Value.absent(),
+    this.srsInterval = const Value.absent(),
   });
   WordsCompanion.insert({
     this.id = const Value.absent(),
@@ -702,6 +825,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
     this.learningDirection = const Value.absent(),
     this.japaneseReading = const Value.absent(),
     this.extraExamples = const Value.absent(),
+    this.easeFactor = const Value.absent(),
+    this.srsRepetitions = const Value.absent(),
+    this.srsInterval = const Value.absent(),
   }) : english = Value(english);
   static Insertable<Word> custom({
     Expression<int>? id,
@@ -718,6 +844,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
     Expression<String>? learningDirection,
     Expression<String>? japaneseReading,
     Expression<String>? extraExamples,
+    Expression<double>? easeFactor,
+    Expression<int>? srsRepetitions,
+    Expression<int>? srsInterval,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -734,6 +863,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
       if (learningDirection != null) 'learning_direction': learningDirection,
       if (japaneseReading != null) 'japanese_reading': japaneseReading,
       if (extraExamples != null) 'extra_examples': extraExamples,
+      if (easeFactor != null) 'ease_factor': easeFactor,
+      if (srsRepetitions != null) 'srs_repetitions': srsRepetitions,
+      if (srsInterval != null) 'srs_interval': srsInterval,
     });
   }
 
@@ -752,6 +884,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
     Value<String>? learningDirection,
     Value<String?>? japaneseReading,
     Value<String?>? extraExamples,
+    Value<double>? easeFactor,
+    Value<int>? srsRepetitions,
+    Value<int>? srsInterval,
   }) {
     return WordsCompanion(
       id: id ?? this.id,
@@ -768,6 +903,9 @@ class WordsCompanion extends UpdateCompanion<Word> {
       learningDirection: learningDirection ?? this.learningDirection,
       japaneseReading: japaneseReading ?? this.japaneseReading,
       extraExamples: extraExamples ?? this.extraExamples,
+      easeFactor: easeFactor ?? this.easeFactor,
+      srsRepetitions: srsRepetitions ?? this.srsRepetitions,
+      srsInterval: srsInterval ?? this.srsInterval,
     );
   }
 
@@ -816,6 +954,15 @@ class WordsCompanion extends UpdateCompanion<Word> {
     if (extraExamples.present) {
       map['extra_examples'] = Variable<String>(extraExamples.value);
     }
+    if (easeFactor.present) {
+      map['ease_factor'] = Variable<double>(easeFactor.value);
+    }
+    if (srsRepetitions.present) {
+      map['srs_repetitions'] = Variable<int>(srsRepetitions.value);
+    }
+    if (srsInterval.present) {
+      map['srs_interval'] = Variable<int>(srsInterval.value);
+    }
     return map;
   }
 
@@ -835,7 +982,10 @@ class WordsCompanion extends UpdateCompanion<Word> {
           ..write('nextReviewDate: $nextReviewDate, ')
           ..write('learningDirection: $learningDirection, ')
           ..write('japaneseReading: $japaneseReading, ')
-          ..write('extraExamples: $extraExamples')
+          ..write('extraExamples: $extraExamples, ')
+          ..write('easeFactor: $easeFactor, ')
+          ..write('srsRepetitions: $srsRepetitions, ')
+          ..write('srsInterval: $srsInterval')
           ..write(')'))
         .toString();
   }
@@ -1488,6 +1638,9 @@ typedef $$WordsTableCreateCompanionBuilder =
       Value<String> learningDirection,
       Value<String?> japaneseReading,
       Value<String?> extraExamples,
+      Value<double> easeFactor,
+      Value<int> srsRepetitions,
+      Value<int> srsInterval,
     });
 typedef $$WordsTableUpdateCompanionBuilder =
     WordsCompanion Function({
@@ -1505,6 +1658,9 @@ typedef $$WordsTableUpdateCompanionBuilder =
       Value<String> learningDirection,
       Value<String?> japaneseReading,
       Value<String?> extraExamples,
+      Value<double> easeFactor,
+      Value<int> srsRepetitions,
+      Value<int> srsInterval,
     });
 
 final class $$WordsTableReferences
@@ -1605,6 +1761,21 @@ class $$WordsTableFilterComposer extends Composer<_$AppDatabase, $WordsTable> {
 
   ColumnFilters<String> get extraExamples => $composableBuilder(
     column: $table.extraExamples,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get easeFactor => $composableBuilder(
+    column: $table.easeFactor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get srsRepetitions => $composableBuilder(
+    column: $table.srsRepetitions,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get srsInterval => $composableBuilder(
+    column: $table.srsInterval,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1712,6 +1883,21 @@ class $$WordsTableOrderingComposer
     column: $table.extraExamples,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<double> get easeFactor => $composableBuilder(
+    column: $table.easeFactor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get srsRepetitions => $composableBuilder(
+    column: $table.srsRepetitions,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get srsInterval => $composableBuilder(
+    column: $table.srsInterval,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$WordsTableAnnotationComposer
@@ -1778,6 +1964,21 @@ class $$WordsTableAnnotationComposer
 
   GeneratedColumn<String> get extraExamples => $composableBuilder(
     column: $table.extraExamples,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get easeFactor => $composableBuilder(
+    column: $table.easeFactor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get srsRepetitions => $composableBuilder(
+    column: $table.srsRepetitions,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get srsInterval => $composableBuilder(
+    column: $table.srsInterval,
     builder: (column) => column,
   );
 
@@ -1849,6 +2050,9 @@ class $$WordsTableTableManager
                 Value<String> learningDirection = const Value.absent(),
                 Value<String?> japaneseReading = const Value.absent(),
                 Value<String?> extraExamples = const Value.absent(),
+                Value<double> easeFactor = const Value.absent(),
+                Value<int> srsRepetitions = const Value.absent(),
+                Value<int> srsInterval = const Value.absent(),
               }) => WordsCompanion(
                 id: id,
                 english: english,
@@ -1864,6 +2068,9 @@ class $$WordsTableTableManager
                 learningDirection: learningDirection,
                 japaneseReading: japaneseReading,
                 extraExamples: extraExamples,
+                easeFactor: easeFactor,
+                srsRepetitions: srsRepetitions,
+                srsInterval: srsInterval,
               ),
           createCompanionCallback:
               ({
@@ -1881,6 +2088,9 @@ class $$WordsTableTableManager
                 Value<String> learningDirection = const Value.absent(),
                 Value<String?> japaneseReading = const Value.absent(),
                 Value<String?> extraExamples = const Value.absent(),
+                Value<double> easeFactor = const Value.absent(),
+                Value<int> srsRepetitions = const Value.absent(),
+                Value<int> srsInterval = const Value.absent(),
               }) => WordsCompanion.insert(
                 id: id,
                 english: english,
@@ -1896,6 +2106,9 @@ class $$WordsTableTableManager
                 learningDirection: learningDirection,
                 japaneseReading: japaneseReading,
                 extraExamples: extraExamples,
+                easeFactor: easeFactor,
+                srsRepetitions: srsRepetitions,
+                srsInterval: srsInterval,
               ),
           withReferenceMapper: (p0) => p0
               .map(

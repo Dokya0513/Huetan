@@ -77,6 +77,7 @@
   "sortWeakness": "苦手度順",
   "sortPartOfSpeech": "品詞順",
   "addWordTooltip": "単語を追加（詳細入力）",
+  "addWordFabLabel": "単語追加",
   "emptyWordsMessage": "まだ単語が登録されていません。「ホーム」タブの入力欄から追加してください。",
   "searchHint": "英単語・意味で検索",
   "weakOnlyFilterLabel": "苦手のみ表示",
@@ -187,6 +188,7 @@
 
   "tapToReveal": "カードをタップして答えを表示",
   "dontKnowButton": "わからなかった",
+  "struggledButton": "悩んだがわかった",
   "knowButton": "わかった",
   "viewResultButton": "結果を見る",
 

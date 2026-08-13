@@ -4,16 +4,29 @@ import 'dart:math';
 import 'package:drift/drift.dart';
 
 import '../data/database.dart';
+import '../models/answer_quality.dart';
 import '../models/learning_direction.dart';
 import 'activity_repository.dart' show dateOnly;
 
-/// Leitner box range: lower box = weaker word = shown more often.
+/// Leitner box range: lower box = weaker word = shown more often. The box
+/// itself no longer drives scheduling (see recordAnswer()'s SM-2 logic) —
+/// it's now a display/sorting-only tier derived from the current SM-2
+/// interval via [_tierForInterval], kept so the weak-word badges, sort
+/// order, and session-weighting logic below don't need to change.
 const int minLeitnerBox = 1;
 const int maxLeitnerBox = 5;
 
-/// Days until the next review, keyed by the Leitner box the word just
-/// landed in. Mimics a simple spaced-repetition schedule.
-const Map<int, int> reviewIntervalDays = {1: 1, 2: 3, 3: 7, 4: 14, 5: 30};
+/// Interval-in-days breakpoints for deriving [Word.leitnerBox] from the
+/// SM-2 interval — mirrors the old fixed per-box schedule's boundaries, so
+/// the resulting tier reads the same way it always has (1=weakest/just
+/// missed, 5=strongest/reviewed a month-plus out).
+int _tierForInterval(int intervalDays) {
+  if (intervalDays <= 1) return 1;
+  if (intervalDays <= 3) return 2;
+  if (intervalDays <= 7) return 3;
+  if (intervalDays <= 14) return 4;
+  return 5;
+}
 
 enum ReviewDirection {
   enToJa('en2ja'),
@@ -248,27 +261,54 @@ class WordRepository {
     return keyed.take(count).map((e) => e.value).toList();
   }
 
-  /// Records the result of answering [wordId] in the given [direction],
-  /// updates its Leitner box (correct -> +1, incorrect -> reset to 1),
-  /// and logs the attempt.
+  /// Records the result of answering [wordId] in the given [direction]
+  /// using the SM-2 spaced-repetition algorithm: [quality] < 3 (didntKnow)
+  /// resets the streak and drops the interval back to 1 day; quality >= 3
+  /// extends it (1 day -> 6 days -> previous interval * ease factor), and
+  /// nudges the ease factor up or down depending on how easy the recall
+  /// was. Also updates the derived Leitner-box display tier and logs the
+  /// attempt.
   Future<void> recordAnswer({
     required int wordId,
     required ReviewDirection direction,
-    required bool isCorrect,
+    required AnswerQuality quality,
   }) async {
     final word = await (db.select(
       db.words,
     )..where((t) => t.id.equals(wordId))).getSingle();
-    final newBox = isCorrect
-        ? (word.leitnerBox + 1).clamp(minLeitnerBox, maxLeitnerBox)
-        : minLeitnerBox;
+
+    final q = quality.value;
+    int repetitions;
+    int interval;
+    double ease;
+    if (q < 3) {
+      repetitions = 0;
+      interval = 1;
+      ease = word.easeFactor; // SM-2 leaves EF untouched on a miss.
+    } else {
+      repetitions = word.srsRepetitions + 1;
+      if (repetitions <= 1) {
+        interval = 1;
+      } else if (repetitions == 2) {
+        interval = 6;
+      } else {
+        interval = (word.srsInterval * word.easeFactor).round();
+      }
+      ease = word.easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+      if (ease < 1.3) ease = 1.3;
+    }
+
+    final newBox = _tierForInterval(interval);
     final nextReviewDate = dateOnly(
       DateTime.now(),
-    ).add(Duration(days: reviewIntervalDays[newBox] ?? 1));
+    ).add(Duration(days: interval));
 
     await (db.update(db.words)..where((t) => t.id.equals(wordId))).write(
       WordsCompanion(
         leitnerBox: Value(newBox),
+        easeFactor: Value(ease),
+        srsRepetitions: Value(repetitions),
+        srsInterval: Value(interval),
         lastReviewedAt: Value(DateTime.now()),
         nextReviewDate: Value(nextReviewDate),
       ),
@@ -280,7 +320,7 @@ class WordRepository {
           ReviewLogsCompanion.insert(
             wordId: wordId,
             direction: direction.value,
-            isCorrect: isCorrect,
+            isCorrect: quality.isCorrect,
           ),
         );
   }

@@ -129,15 +129,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.playlist_add),
-            tooltip: l10n.addWordTooltip,
-            onPressed: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const WordFormScreen()));
-            },
-          ),
         ],
       ),
       body: wordsAsync.when(
@@ -188,6 +179,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: sortedWords.isEmpty
                     ? Center(child: Text(l10n.noMatchingWords))
                     : ListView.separated(
+                        // Bottom padding keeps the last rows from being
+                        // hidden behind the two stacked FABs (単語追加 +
+                        // 暗記カード) — tall enough for both plus their
+                        // gap and some breathing room.
+                        padding: const EdgeInsets.only(bottom: 160),
                         itemCount: sortedWords.length,
                         separatorBuilder: (_, _) => const Divider(height: 1),
                         itemBuilder: (context, index) {
@@ -318,18 +314,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         error: (error, stack) =>
             Center(child: Text(l10n.errorWithMessage(error.toString()))),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const FlashcardSetupScreen(
-                allowedModes: [QuizMode.flashcard],
-              ),
-            ),
-          );
-        },
-        icon: const Icon(Icons.style_outlined),
-        label: Text(l10n.flashcardFabLabel),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'addWordFab',
+            tooltip: l10n.addWordTooltip,
+            // Matches the 形容詞 (adjective) part-of-speech pill color, per
+            // request, rather than the theme's semantic "success" green.
+            backgroundColor: posColors[PartOfSpeech.adjective],
+            foregroundColor: Colors.white,
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const WordFormScreen()));
+            },
+            icon: const Icon(Icons.playlist_add),
+            label: Text(l10n.addWordFabLabel),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: 'flashcardFab',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const FlashcardSetupScreen(
+                    allowedModes: [QuizMode.flashcard],
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.style_outlined),
+            label: Text(l10n.flashcardFabLabel),
+          ),
+        ],
       ),
     );
   }

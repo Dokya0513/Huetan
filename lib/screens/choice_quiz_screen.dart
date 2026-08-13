@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
 import '../l10n/app_localizations.dart';
+import '../models/answer_quality.dart';
 import '../providers/providers.dart';
 import '../repositories/activity_repository.dart';
 import '../repositories/word_repository.dart';
@@ -109,7 +110,9 @@ class _ChoiceQuizScreenState extends ConsumerState<ChoiceQuizScreen> {
         .recordAnswer(
           wordId: question.word.id,
           direction: question.direction,
-          isCorrect: isCorrect,
+          // Multiple choice can only observe right/wrong, not "struggled" —
+          // see AnswerQuality's doc comment.
+          quality: isCorrect ? AnswerQuality.knew : AnswerQuality.didntKnow,
         );
 
     if (isCorrect) {

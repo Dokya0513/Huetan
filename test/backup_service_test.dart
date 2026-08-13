@@ -5,6 +5,7 @@
 // exact failure mode can't reoccur unnoticed.
 import 'package:drift/native.dart';
 import 'package:english_learning/data/database.dart';
+import 'package:english_learning/models/answer_quality.dart';
 import 'package:english_learning/models/learning_direction.dart';
 import 'package:english_learning/repositories/word_repository.dart';
 import 'package:english_learning/services/backup_service.dart';
@@ -50,7 +51,7 @@ void main() {
       await sourceRepo.recordAnswer(
         wordId: enId,
         direction: ReviewDirection.enToJa,
-        isCorrect: true,
+        quality: AnswerQuality.knew,
       );
 
       final data = await backupService.buildExport(sourceDb);
@@ -70,6 +71,10 @@ void main() {
       expect(enWord.partOfSpeech, '名詞');
       expect(enWord.audioUrl, 'https://example.com/apple.mp3');
       expect(enWord.learningDirection, LearningDirection.enTarget.dbValue);
+      // SM-2 state must round-trip too, not just reset to the defaults.
+      expect(enWord.srsRepetitions, 1);
+      expect(enWord.srsInterval, 1);
+      expect(enWord.easeFactor, greaterThan(2.5));
       // The critical regression case: a jaTarget word must round-trip as
       // jaTarget, not silently fall back to the enTarget column default.
       final jaWord = imported.firstWhere((w) => w.id == jaId);
@@ -122,6 +127,11 @@ void main() {
       );
       expect(imported.single.japaneseReading, isNull);
       expect(imported.single.extraExamples, isNull);
+      // Missing SM-2 keys (backup predates the SM-2 rewrite) default to a
+      // never-reviewed word's state rather than throwing.
+      expect(imported.single.easeFactor, 2.5);
+      expect(imported.single.srsRepetitions, 0);
+      expect(imported.single.srsInterval, 0);
     },
   );
 }

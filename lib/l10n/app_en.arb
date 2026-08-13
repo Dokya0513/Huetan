@@ -53,6 +53,7 @@
   "sortWeakness": "Weakest first",
   "sortPartOfSpeech": "Part of speech",
   "addWordTooltip": "Add a word (full details)",
+  "addWordFabLabel": "Add Word",
   "emptyWordsMessage": "No words yet. Add one from the input field on the Home tab.",
   "searchHint": "Search by word or meaning",
   "weakOnlyFilterLabel": "Weak words only",
@@ -135,6 +136,7 @@
 
   "tapToReveal": "Tap the card to reveal the answer",
   "dontKnowButton": "Didn't know",
+  "struggledButton": "Struggled, but knew",
   "knowButton": "Knew it",
   "viewResultButton": "View Result",
 

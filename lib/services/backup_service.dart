@@ -86,6 +86,9 @@ class BackupService {
     'learningDirection': w.learningDirection,
     'japaneseReading': w.japaneseReading,
     'extraExamples': w.extraExamples,
+    'easeFactor': w.easeFactor,
+    'srsRepetitions': w.srsRepetitions,
+    'srsInterval': w.srsInterval,
   };
 
   WordsCompanion _wordFromJson(Map<String, dynamic> j) => WordsCompanion(
@@ -112,6 +115,14 @@ class BackupService {
     learningDirection: Value(j['learningDirection'] as String? ?? 'enTarget'),
     japaneseReading: Value(j['japaneseReading'] as String?),
     extraExamples: Value(j['extraExamples'] as String?),
+    // Older backups (pre-SM-2) won't have these keys — default to the
+    // column defaults for a never-reviewed word rather than trying to
+    // back-derive them from leitnerBox here (the schema migration already
+    // does that one-time backfill for the local DB; a restored backup from
+    // before this feature existed just starts the SM-2 ramp fresh).
+    easeFactor: Value((j['easeFactor'] as num?)?.toDouble() ?? 2.5),
+    srsRepetitions: Value(j['srsRepetitions'] as int? ?? 0),
+    srsInterval: Value(j['srsInterval'] as int? ?? 0),
   );
 
   Map<String, dynamic> _reviewLogToJson(ReviewLog r) => {
