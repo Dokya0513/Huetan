@@ -1,0 +1,31 @@
+name: iOS unsigned build
+
+# Manual only — macOS runners are far more expensive (10x the minutes) than
+# the Linux runner the main CI job uses, and this build isn't needed on
+# every push, only when testing on an iPhone via Sideloadly.
+on:
+  workflow_dispatch:
+
+jobs:
+  build-unsigned-ipa:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      # No Apple Developer account/certificates available in CI — this
+      # produces an unsigned .app, which Sideloadly re-signs locally with a
+      # free Apple ID at install time.
+      - run: flutter build ios --release --no-codesign
+      - name: Package unsigned IPA
+        run: |
+          mkdir -p build/ios/ipa_payload/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/ipa_payload/Payload/
+          cd build/ios/ipa_payload
+          zip -r ../fuetan-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fuetan-unsigned-ipa
+          path: build/ios/fuetan-unsigned.ipa
